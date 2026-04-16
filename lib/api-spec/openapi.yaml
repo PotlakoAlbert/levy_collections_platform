@@ -3,20 +3,42 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Levy Collection Practice Management Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: matters
+    description: Matter management
+  - name: debtors
+    description: Debtor management
+  - name: schemes
+    description: Scheme management
+  - name: agents
+    description: Managing agent management
+  - name: documents
+    description: Document generation and management
+  - name: payments
+    description: Payment recording
+  - name: tasks
+    description: Diary and task management
+  - name: reports
+    description: Reporting
+  - name: users
+    description: User management
+  - name: dashboard
+    description: Dashboard data
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +46,958 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # USERS
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # MANAGING AGENTS
+  /agents:
+    get:
+      operationId: listAgents
+      tags: [agents]
+      summary: List managing agents
+      responses:
+        "200":
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ManagingAgent"
+    post:
+      operationId: createAgent
+      tags: [agents]
+      summary: Create managing agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentRequest"
+      responses:
+        "201":
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagingAgent"
+
+  /agents/{id}:
+    get:
+      operationId: getAgent
+      tags: [agents]
+      summary: Get agent by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagingAgent"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateAgent
+      tags: [agents]
+      summary: Update agent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAgentRequest"
+      responses:
+        "200":
+          description: Updated agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagingAgent"
+
+  # SCHEMES
+  /schemes:
+    get:
+      operationId: listSchemes
+      tags: [schemes]
+      summary: List schemes
+      parameters:
+        - name: agentId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of schemes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Scheme"
+    post:
+      operationId: createScheme
+      tags: [schemes]
+      summary: Create scheme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSchemeRequest"
+      responses:
+        "201":
+          description: Scheme created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scheme"
+
+  /schemes/{id}:
+    get:
+      operationId: getScheme
+      tags: [schemes]
+      summary: Get scheme by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Scheme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scheme"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateScheme
+      tags: [schemes]
+      summary: Update scheme
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSchemeRequest"
+      responses:
+        "200":
+          description: Updated scheme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scheme"
+
+  # DEBTORS
+  /debtors:
+    get:
+      operationId: listDebtors
+      tags: [debtors]
+      summary: List debtors
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of debtors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Debtor"
+    post:
+      operationId: createDebtor
+      tags: [debtors]
+      summary: Create debtor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDebtorRequest"
+      responses:
+        "201":
+          description: Debtor created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Debtor"
+
+  /debtors/{id}:
+    get:
+      operationId: getDebtor
+      tags: [debtors]
+      summary: Get debtor by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Debtor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Debtor"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateDebtor
+      tags: [debtors]
+      summary: Update debtor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDebtorRequest"
+      responses:
+        "200":
+          description: Updated debtor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Debtor"
+
+  /debtors/{id}/matters:
+    get:
+      operationId: getDebtorMatters
+      tags: [debtors]
+      summary: Get all matters for a debtor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Matters for debtor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Matter"
+
+  # MATTERS
+  /matters:
+    get:
+      operationId: listMatters
+      tags: [matters]
+      summary: List matters
+      parameters:
+        - name: stage
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: schemeId
+          in: query
+          schema:
+            type: string
+        - name: agentId
+          in: query
+          schema:
+            type: string
+        - name: assignedToId
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: priority
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of matters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatterSummary"
+    post:
+      operationId: createMatter
+      tags: [matters]
+      summary: Create matter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMatterRequest"
+      responses:
+        "201":
+          description: Matter created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matter"
+
+  /matters/{id}:
+    get:
+      operationId: getMatter
+      tags: [matters]
+      summary: Get matter details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Matter with full details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatterDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateMatter
+      tags: [matters]
+      summary: Update matter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMatterRequest"
+      responses:
+        "200":
+          description: Updated matter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matter"
+
+  /matters/{id}/stage:
+    patch:
+      operationId: updateMatterStage
+      tags: [matters]
+      summary: Advance matter to next stage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStageRequest"
+      responses:
+        "200":
+          description: Stage updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matter"
+        "400":
+          description: Invalid stage transition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /matters/{id}/history:
+    get:
+      operationId: getMatterHistory
+      tags: [matters]
+      summary: Get matter stage history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Stage history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StageHistory"
+
+  /matters/{id}/financials:
+    get:
+      operationId: getMatterFinancials
+      tags: [matters]
+      summary: Get matter financial summary
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Financial summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSummary"
+
+  # DOCUMENTS
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List documents
+      parameters:
+        - name: matterId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+
+  /documents/generate:
+    post:
+      operationId: generateDocument
+      tags: [documents]
+      summary: Generate a document for a matter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateDocumentRequest"
+      responses:
+        "201":
+          description: Document generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /documents/bulk-generate:
+    post:
+      operationId: bulkGenerateDocuments
+      tags: [documents]
+      summary: Bulk generate documents for multiple matters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkGenerateRequest"
+      responses:
+        "200":
+          description: Bulk generation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkGenerateResponse"
+
+  /documents/{id}/download:
+    get:
+      operationId: downloadDocument
+      tags: [documents]
+      summary: Download a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Document download URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentDownload"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # PAYMENTS
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: List payments
+      parameters:
+        - name: matterId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: recordPayment
+      tags: [payments]
+      summary: Record a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordPaymentRequest"
+      responses:
+        "201":
+          description: Payment recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  # TASKS
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List tasks
+      parameters:
+        - name: matterId
+          in: query
+          schema:
+            type: string
+        - name: assigneeId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: myTasks
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequest"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}:
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}/complete:
+    patch:
+      operationId: completeTask
+      tags: [tasks]
+      summary: Mark a task as complete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteTaskRequest"
+      responses:
+        "200":
+          description: Task completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  # REPORTS
+  /reports/aged-debtors:
+    get:
+      operationId: getAgedDebtorsReport
+      tags: [reports]
+      summary: Aged debtors report
+      parameters:
+        - name: agentId
+          in: query
+          schema:
+            type: string
+        - name: schemeId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Aged debtors report
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgedDebtorRow"
+
+  /reports/collections-by-agent:
+    get:
+      operationId: getCollectionsByAgent
+      tags: [reports]
+      summary: Collections by agent report
+      parameters:
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+        - name: toDate
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Collections by agent
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CollectionsByAgentRow"
+
+  /reports/pipeline-summary:
+    get:
+      operationId: getPipelineSummary
+      tags: [reports]
+      summary: Pipeline summary by stage
+      responses:
+        "200":
+          description: Pipeline summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PipelineSummaryRow"
+
+  # DASHBOARD
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary data
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/overdue-tasks:
+    get:
+      operationId: getDashboardOverdueTasks
+      tags: [dashboard]
+      summary: Get top overdue tasks for dashboard
+      responses:
+        "200":
+          description: Overdue tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+
+  /interest-rates:
+    get:
+      operationId: listInterestRates
+      tags: [reports]
+      summary: List prescribed interest rates
+      responses:
+        "200":
+          description: Interest rates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InterestRate"
+    post:
+      operationId: createInterestRate
+      tags: [reports]
+      summary: Create interest rate entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInterestRateRequest"
+      responses:
+        "201":
+          description: Interest rate created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterestRate"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +1008,1002 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - email
+        - name
+        - role
+        - isActive
+        - createdAt
+
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+      required:
+        - email
+        - name
+        - password
+        - role
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        isActive:
+          type: boolean
+        password:
+          type: ["string", "null"]
+
+    ManagingAgent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        contactEmail:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        schemeCount:
+          type: ["integer", "null"]
+      required:
+        - id
+        - name
+        - isActive
+        - createdAt
+
+    CreateAgentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        contactEmail:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+      required:
+        - name
+
+    UpdateAgentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        contactEmail:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+
+    Scheme:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        agentId:
+          type: string
+        agentName:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        levyAmount:
+          type: ["number", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        matterCount:
+          type: ["integer", "null"]
+      required:
+        - id
+        - name
+        - agentId
+        - isActive
+        - createdAt
+
+    CreateSchemeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        agentId:
+          type: string
+        address:
+          type: ["string", "null"]
+        levyAmount:
+          type: ["number", "null"]
+      required:
+        - name
+        - agentId
+
+    UpdateSchemeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        agentId:
+          type: string
+        address:
+          type: ["string", "null"]
+        levyAmount:
+          type: ["number", "null"]
+        isActive:
+          type: boolean
+
+    Debtor:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        fullName:
+          type: string
+        idNumber:
+          type: ["string", "null"]
+        companyName:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        physicalAddress:
+          type: ["string", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+        matterCount:
+          type: ["integer", "null"]
+      required:
+        - id
+        - firstName
+        - lastName
+        - fullName
+        - status
+        - createdAt
+
+    CreateDebtorRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        idNumber:
+          type: ["string", "null"]
+        companyName:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        physicalAddress:
+          type: ["string", "null"]
+        status:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - status
+
+    UpdateDebtorRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        idNumber:
+          type: ["string", "null"]
+        companyName:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        physicalAddress:
+          type: ["string", "null"]
+        status:
+          type: string
+
+    Matter:
+      type: object
+      properties:
+        id:
+          type: string
+        reference:
+          type: string
+        debtorId:
+          type: string
+        schemeId:
+          type: string
+        unit:
+          type: string
+        stage:
+          type: string
+        priority:
+          type: string
+        status:
+          type: string
+        capitalArrears:
+          type: number
+        interest:
+          type: number
+        legalCosts:
+          type: number
+        totalPaid:
+          type: number
+        interestFromDate:
+          type: ["string", "null"]
+        lodDate:
+          type: ["string", "null"]
+        s129Date:
+          type: ["string", "null"]
+        summonsDate:
+          type: ["string", "null"]
+        judgmentDate:
+          type: ["string", "null"]
+        writDate:
+          type: ["string", "null"]
+        saleDate:
+          type: ["string", "null"]
+        assignedToId:
+          type: ["string", "null"]
+        createdById:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - reference
+        - debtorId
+        - schemeId
+        - unit
+        - stage
+        - priority
+        - status
+        - capitalArrears
+        - interest
+        - legalCosts
+        - totalPaid
+        - createdById
+        - createdAt
+        - updatedAt
+
+    MatterSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        reference:
+          type: string
+        debtorName:
+          type: string
+        schemeName:
+          type: string
+        agentName:
+          type: ["string", "null"]
+        unit:
+          type: string
+        stage:
+          type: string
+        priority:
+          type: string
+        status:
+          type: string
+        capitalArrears:
+          type: number
+        interest:
+          type: number
+        legalCosts:
+          type: number
+        totalPaid:
+          type: number
+        totalOutstanding:
+          type: number
+        assignedToName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - reference
+        - debtorName
+        - schemeName
+        - unit
+        - stage
+        - priority
+        - status
+        - capitalArrears
+        - interest
+        - legalCosts
+        - totalPaid
+        - totalOutstanding
+        - createdAt
+        - updatedAt
+
+    MatterDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        reference:
+          type: string
+        debtor:
+          $ref: "#/components/schemas/Debtor"
+        scheme:
+          $ref: "#/components/schemas/Scheme"
+        unit:
+          type: string
+        stage:
+          type: string
+        priority:
+          type: string
+        status:
+          type: string
+        capitalArrears:
+          type: number
+        interest:
+          type: number
+        legalCosts:
+          type: number
+        totalPaid:
+          type: number
+        interestFromDate:
+          type: ["string", "null"]
+        lodDate:
+          type: ["string", "null"]
+        s129Date:
+          type: ["string", "null"]
+        summonsDate:
+          type: ["string", "null"]
+        judgmentDate:
+          type: ["string", "null"]
+        writDate:
+          type: ["string", "null"]
+        saleDate:
+          type: ["string", "null"]
+        assignedToId:
+          type: ["string", "null"]
+        assignedToName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Task"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Document"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/StageHistory"
+      required:
+        - id
+        - reference
+        - debtor
+        - scheme
+        - unit
+        - stage
+        - priority
+        - status
+        - capitalArrears
+        - interest
+        - legalCosts
+        - totalPaid
+        - createdAt
+        - updatedAt
+        - tasks
+        - documents
+        - payments
+        - history
+
+    CreateMatterRequest:
+      type: object
+      properties:
+        debtorId:
+          type: string
+        schemeId:
+          type: string
+        unit:
+          type: string
+        priority:
+          type: string
+        capitalArrears:
+          type: number
+        legalCosts:
+          type: number
+        interestFromDate:
+          type: ["string", "null"]
+        assignedToId:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - debtorId
+        - schemeId
+        - unit
+        - priority
+        - capitalArrears
+
+    UpdateMatterRequest:
+      type: object
+      properties:
+        unit:
+          type: string
+        priority:
+          type: string
+        status:
+          type: string
+        capitalArrears:
+          type: number
+        legalCosts:
+          type: number
+        interestFromDate:
+          type: ["string", "null"]
+        assignedToId:
+          type: ["string", "null"]
+        lodDate:
+          type: ["string", "null"]
+        s129Date:
+          type: ["string", "null"]
+        summonsDate:
+          type: ["string", "null"]
+        judgmentDate:
+          type: ["string", "null"]
+        writDate:
+          type: ["string", "null"]
+        saleDate:
+          type: ["string", "null"]
+
+    UpdateStageRequest:
+      type: object
+      properties:
+        stage:
+          type: string
+        notes:
+          type: ["string", "null"]
+      required:
+        - stage
+
+    StageHistory:
+      type: object
+      properties:
+        id:
+          type: string
+        matterId:
+          type: string
+        fromStage:
+          type: ["string", "null"]
+        toStage:
+          type: string
+        changedByName:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - matterId
+        - toStage
+        - changedByName
+        - createdAt
+
+    FinancialSummary:
+      type: object
+      properties:
+        matterId:
+          type: string
+        capitalArrears:
+          type: number
+        interestAccrued:
+          type: number
+        interestRate:
+          type: number
+        interestFromDate:
+          type: ["string", "null"]
+        interestDays:
+          type: ["integer", "null"]
+        interestPerDay:
+          type: ["number", "null"]
+        legalCosts:
+          type: number
+        totalPaid:
+          type: number
+        totalOutstanding:
+          type: number
+        runningBalance:
+          type: number
+      required:
+        - matterId
+        - capitalArrears
+        - interestAccrued
+        - interestRate
+        - legalCosts
+        - totalPaid
+        - totalOutstanding
+        - runningBalance
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        matterId:
+          type: string
+        matterReference:
+          type: ["string", "null"]
+        docType:
+          type: string
+        fileName:
+          type: string
+        fileUrl:
+          type: string
+        generatedByName:
+          type: ["string", "null"]
+        sentVia:
+          type: ["string", "null"]
+        sentAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - matterId
+        - docType
+        - fileName
+        - fileUrl
+        - createdAt
+
+    GenerateDocumentRequest:
+      type: object
+      properties:
+        matterId:
+          type: string
+        docType:
+          type: string
+        customData:
+          type: object
+          additionalProperties: true
+      required:
+        - matterId
+        - docType
+
+    BulkGenerateRequest:
+      type: object
+      properties:
+        matterIds:
+          type: array
+          items:
+            type: string
+        docType:
+          type: string
+      required:
+        - matterIds
+        - docType
+
+    BulkGenerateResponse:
+      type: object
+      properties:
+        generated:
+          type: integer
+        failed:
+          type: integer
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Document"
+        errors:
+          type: array
+          items:
+            type: string
+      required:
+        - generated
+        - failed
+        - documents
+        - errors
+
+    DocumentDownload:
+      type: object
+      properties:
+        url:
+          type: string
+        fileName:
+          type: string
+        expiresAt:
+          type: string
+      required:
+        - url
+        - fileName
+        - expiresAt
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        matterId:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+        receivedDate:
+          type: string
+        allocatedTo:
+          type: ["string", "null"]
+        receiptedByName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - matterId
+        - amount
+        - method
+        - receivedDate
+        - createdAt
+
+    RecordPaymentRequest:
+      type: object
+      properties:
+        matterId:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+        receivedDate:
+          type: string
+        allocatedTo:
+          type: ["string", "null"]
+      required:
+        - matterId
+        - amount
+        - method
+        - receivedDate
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        matterId:
+          type: string
+        matterReference:
+          type: ["string", "null"]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+        priority:
+          type: string
+        dueDate:
+          type: ["string", "null"]
+        assigneeId:
+          type: string
+        assigneeName:
+          type: ["string", "null"]
+        isAutoGen:
+          type: boolean
+        completedAt:
+          type: ["string", "null"]
+        completionNote:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - matterId
+        - title
+        - status
+        - priority
+        - assigneeId
+        - isAutoGen
+        - createdAt
+
+    CreateTaskRequest:
+      type: object
+      properties:
+        matterId:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        priority:
+          type: string
+        dueDate:
+          type: ["string", "null"]
+        assigneeId:
+          type: string
+      required:
+        - matterId
+        - title
+        - priority
+        - assigneeId
+
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        priority:
+          type: string
+        dueDate:
+          type: ["string", "null"]
+        assigneeId:
+          type: string
+        status:
+          type: string
+
+    CompleteTaskRequest:
+      type: object
+      properties:
+        note:
+          type: ["string", "null"]
+
+    AgedDebtorRow:
+      type: object
+      properties:
+        matterId:
+          type: string
+        reference:
+          type: string
+        debtorName:
+          type: string
+        schemeName:
+          type: string
+        agentName:
+          type: ["string", "null"]
+        unit:
+          type: string
+        stage:
+          type: string
+        capitalArrears:
+          type: number
+        interest:
+          type: number
+        legalCosts:
+          type: number
+        totalOutstanding:
+          type: number
+        bucket0to30:
+          type: number
+        bucket31to60:
+          type: number
+        bucket61to90:
+          type: number
+        bucket91to120:
+          type: number
+        bucket120plus:
+          type: number
+        lodDate:
+          type: ["string", "null"]
+      required:
+        - matterId
+        - reference
+        - debtorName
+        - schemeName
+        - unit
+        - stage
+        - capitalArrears
+        - interest
+        - legalCosts
+        - totalOutstanding
+        - bucket0to30
+        - bucket31to60
+        - bucket61to90
+        - bucket91to120
+        - bucket120plus
+
+    CollectionsByAgentRow:
+      type: object
+      properties:
+        agentId:
+          type: string
+        agentName:
+          type: string
+        totalMatters:
+          type: integer
+        totalCapital:
+          type: number
+        totalCollected:
+          type: number
+        totalOutstanding:
+          type: number
+        mattersPerStage:
+          type: object
+          additionalProperties:
+            type: integer
+      required:
+        - agentId
+        - agentName
+        - totalMatters
+        - totalCapital
+        - totalCollected
+        - totalOutstanding
+        - mattersPerStage
+
+    PipelineSummaryRow:
+      type: object
+      properties:
+        stage:
+          type: string
+        count:
+          type: integer
+        totalOutstanding:
+          type: number
+        totalCapital:
+          type: number
+      required:
+        - stage
+        - count
+        - totalOutstanding
+        - totalCapital
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalOutstanding:
+          type: number
+        totalCapital:
+          type: number
+        totalInterest:
+          type: number
+        totalLegalCosts:
+          type: number
+        totalCollected:
+          type: number
+        activeMatters:
+          type: integer
+        overdueTasksCount:
+          type: integer
+        mattersByStage:
+          type: array
+          items:
+            $ref: "#/components/schemas/PipelineSummaryRow"
+      required:
+        - totalOutstanding
+        - totalCapital
+        - totalInterest
+        - totalLegalCosts
+        - totalCollected
+        - activeMatters
+        - overdueTasksCount
+        - mattersByStage
+
+    InterestRate:
+      type: object
+      properties:
+        id:
+          type: string
+        rate:
+          type: number
+        effectiveFrom:
+          type: string
+        effectiveTo:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - rate
+        - effectiveFrom
+        - createdAt
+
+    CreateInterestRateRequest:
+      type: object
+      properties:
+        rate:
+          type: number
+        effectiveFrom:
+          type: string
+        effectiveTo:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+      required:
+        - rate
+        - effectiveFrom
