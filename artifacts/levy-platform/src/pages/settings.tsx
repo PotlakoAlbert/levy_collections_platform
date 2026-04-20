@@ -1,8 +1,14 @@
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useListUsers } from "@workspace/api-client-react";
+import { useListUsers, useCreateUser } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel, AlertDialogFooter } from "@/components/ui/alert-dialog";
 import { UserPlus, Shield } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ROLE_COLORS: Record<string, string> = {
   ADMIN: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
@@ -14,6 +20,14 @@ const ROLE_COLORS: Record<string, string> = {
 export function SettingsPage() {
   const { data, isLoading } = useListUsers();
   const users = (data as any)?.users ?? [];
+  const createUser = useCreateUser();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [role, setRole] = React.useState("COLLECTOR");
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -24,7 +38,7 @@ export function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base flex items-center gap-2">
                 <Shield className="h-4 w-4" />
@@ -32,10 +46,59 @@ export function SettingsPage() {
               </CardTitle>
               <CardDescription>Manage platform users and roles</CardDescription>
             </div>
-            <Button size="sm">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add User
-            </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add User
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Add User</AlertDialogTitle>
+                    <AlertDialogDescription>Create a new platform user</AlertDialogDescription>
+                  </AlertDialogHeader>
+
+                  <div className="space-y-3 mt-2">
+                    <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground">Role</label>
+                      <Select value={role} onValueChange={setRole}>
+                        <SelectTrigger className="w-48 h-8 mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ADMIN">ADMIN</SelectItem>
+                          <SelectItem value="ATTORNEY">ATTORNEY</SelectItem>
+                          <SelectItem value="COLLECTOR">COLLECTOR</SelectItem>
+                          <SelectItem value="AGENT_VIEWER">AGENT_VIEWER</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                      createUser.mutate({ data: { email, name, password, role } } as any, {
+                        onSuccess: () => {
+                          setName("");
+                          setEmail("");
+                          setPassword("");
+                          setRole("COLLECTOR");
+                          queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+                          toast({ title: "User created", description: `${name} was created.` });
+                        },
+                        onError: () => {
+                          toast({ title: "Error", description: "Failed to create user", variant: "destructive" });
+                        }
+                      });
+                    }}>Create</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
           </div>
         </CardHeader>
         <CardContent>

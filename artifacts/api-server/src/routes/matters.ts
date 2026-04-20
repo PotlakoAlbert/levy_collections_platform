@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, mattersTable, debtorsTable, schemesTable, managingAgentsTable, usersTable, stageHistoryTable, tasksTable, documentsTable, paymentsTable } from "@workspace/db";
+import { db, mattersTable, debtorsTable, schemesTable, managingAgentsTable, usersTable, stageHistoryTable, tasksTable, documentsTable, paymentsTable, promiseToPayTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
 import { generateMatterReference } from "../lib/reference";
@@ -51,9 +51,25 @@ router.get("/matters", async (req, res): Promise<void> => {
     if (qp.data.priority) matters = matters.filter((m) => m.priority === qp.data.priority);
   }
 
-  // Enrich with debtor/scheme/agent names
+  // Apply search and agent filter during enrichment but compute total up-front
+  const filteredCandidates = [] as typeof matters;
+  for (const m of matters) {
+    // We'll defer debtor/scheme lookup until we know the slice, but we still include all
+    filteredCandidates.push(m);
+  }
+
+  const total = filteredCandidates.length;
+
+  // Pagination
+  const page = qp.success && qp.data.page ? Math.max(1, Number(qp.data.page)) : 1;
+  const limit = qp.success && qp.data.limit ? Math.max(1, Number(qp.data.limit)) : undefined;
+  const offset = limit ? (page - 1) * limit : 0;
+
+  const pageSlice = typeof limit === "number" ? filteredCandidates.slice(offset, offset + limit) : filteredCandidates;
+
+  // Enrich slice with debtor/scheme/agent names and apply search/agent filtering
   const enriched = await Promise.all(
-    matters.map(async (m) => {
+    pageSlice.map(async (m) => {
       const [debtor] = await db.select().from(debtorsTable).where(eq(debtorsTable.id, m.debtorId));
       const [scheme] = await db.select().from(schemesTable).where(eq(schemesTable.id, m.schemeId));
       const agent = scheme ? (await db.select().from(managingAgentsTable).where(eq(managingAgentsTable.id, scheme.agentId)))[0] : null;
@@ -67,7 +83,7 @@ router.get("/matters", async (req, res): Promise<void> => {
       const costs = parseFloat(m.legalCosts);
       const paid = parseFloat(m.totalPaid);
 
-      // Filter by search
+      // Filter by search if provided
       if (qp.success && qp.data.search) {
         const q = qp.data.search.toLowerCase();
         const debtorName = debtor ? `${debtor.firstName} ${debtor.lastName}`.toLowerCase() : "";
@@ -98,7 +114,7 @@ router.get("/matters", async (req, res): Promise<void> => {
     })
   );
 
-  res.json(enriched.filter(Boolean));
+  res.json({ matters: enriched.filter(Boolean), total });
 });
 
 router.post("/matters", async (req, res): Promise<void> => {
@@ -167,6 +183,7 @@ router.get("/matters/:id", async (req, res): Promise<void> => {
   const documents = await db.select().from(documentsTable).where(eq(documentsTable.matterId, matter.id));
   const payments = await db.select().from(paymentsTable).where(eq(paymentsTable.matterId, matter.id));
   const history = await db.select().from(stageHistoryTable).where(eq(stageHistoryTable.matterId, matter.id));
+  const ptps = await db.select().from(promiseToPayTable).where(eq(promiseToPayTable.matterId, matter.id));
 
   // Enrich history with user names
   const enrichedHistory = await Promise.all(
@@ -294,7 +311,160 @@ router.get("/matters/:id", async (req, res): Promise<void> => {
     documents: enrichedDocuments,
     payments: enrichedPayments,
     history: enrichedHistory,
+    ptp: (function() {
+      const active = ptps.find((p) => p.isActive) ?? ptps[0] ?? null;
+      if (!active) return null;
+      return {
+        id: active.id,
+        firstPaymentDate: active.firstPaymentDate?.toISOString() ?? null,
+        firstPaymentAmount: parseFloat(active.firstPaymentAmount),
+        installmentDay: active.installmentDay,
+        installmentAmount: parseFloat(active.installmentAmount),
+        promiseDate: active.promiseDate?.toISOString() ?? null,
+        isActive: active.isActive,
+        createdById: active.createdById,
+        createdAt: active.createdAt.toISOString(),
+        updatedAt: active.updatedAt.toISOString(),
+      };
+    })(),
   });
+});
+
+// Promise To Pay endpoints for a matter
+router.get("/matters/:id/ptp", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const ptps = await db.select().from(promiseToPayTable).where(eq(promiseToPayTable.matterId, params.data.id));
+  const active = ptps.find((p) => p.isActive) ?? ptps[0] ?? null;
+  if (!active) {
+    res.json(null);
+    return;
+  }
+
+  res.json({
+    id: active.id,
+    firstPaymentDate: active.firstPaymentDate?.toISOString() ?? null,
+    firstPaymentAmount: parseFloat(active.firstPaymentAmount),
+    installmentDay: active.installmentDay,
+    installmentAmount: parseFloat(active.installmentAmount),
+    promiseDate: active.promiseDate?.toISOString() ?? null,
+    isActive: active.isActive,
+    createdById: active.createdById,
+    createdAt: active.createdAt.toISOString(),
+    updatedAt: active.updatedAt.toISOString(),
+  });
+});
+
+router.post("/matters/:id/ptp", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = req.body ?? {};
+  const firstPaymentDate = body.firstPaymentDate ? new Date(body.firstPaymentDate) : null;
+  const firstPaymentAmount = body.firstPaymentAmount != null ? String(body.firstPaymentAmount) : null;
+  const installmentDay = body.installmentDay != null ? String(body.installmentDay) : null;
+  const installmentAmount = body.installmentAmount != null ? String(body.installmentAmount) : null;
+  const promiseDate = body.promiseDate ? new Date(body.promiseDate) : new Date();
+
+  if (!firstPaymentDate || !firstPaymentAmount || !installmentDay || !installmentAmount) {
+    res.status(400).json({ error: "Missing required PTP fields" });
+    return;
+  }
+
+  const userId = req.user!.id;
+
+  const [ptp] = await db.insert(promiseToPayTable).values({
+    matterId: params.data.id,
+    firstPaymentDate,
+    firstPaymentAmount,
+    installmentDay,
+    installmentAmount,
+    promiseDate,
+    isActive: true,
+    createdById: userId,
+  }).returning();
+
+  res.status(201).json({
+    id: ptp.id,
+    firstPaymentDate: ptp.firstPaymentDate?.toISOString() ?? null,
+    firstPaymentAmount: parseFloat(ptp.firstPaymentAmount),
+    installmentDay: ptp.installmentDay,
+    installmentAmount: parseFloat(ptp.installmentAmount),
+    promiseDate: ptp.promiseDate?.toISOString() ?? null,
+    isActive: ptp.isActive,
+    createdById: ptp.createdById,
+    createdAt: ptp.createdAt.toISOString(),
+    updatedAt: ptp.updatedAt.toISOString(),
+  });
+});
+
+router.patch("/matters/:id/ptp/deactivate", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  // Deactivate the active PTP for the matter
+  const ptps = await db.select().from(promiseToPayTable).where(eq(promiseToPayTable.matterId, params.data.id));
+  const active = ptps.find((p) => p.isActive) ?? null;
+  if (!active) {
+    res.status(404).json({ error: "No active PTP found" });
+    return;
+  }
+
+  const [updated] = await db.update(promiseToPayTable).set({ isActive: false }).where(eq(promiseToPayTable.id, active.id)).returning();
+  res.json({ id: updated.id, isActive: updated.isActive });
+});
+
+// Generate tasks for a given milestone/stage on a matter
+router.post("/matters/:id/generate-tasks", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = req.body ?? {};
+  const stage = body.stage as string | undefined;
+  const assigneeId = body.assigneeId ?? req.user!.id;
+  if (!stage) {
+    res.status(400).json({ error: "stage is required" });
+    return;
+  }
+
+  // Create auto tasks for the stage
+  await createAutoTasks(params.data.id, stage, assigneeId);
+
+  // Return the tasks for the matter
+  const matterTasks = await db.select().from(tasksTable).where(eq(tasksTable.matterId, params.data.id));
+  const enriched = await Promise.all(
+    matterTasks.map(async (t) => {
+      const [assignee] = await db.select().from(usersTable).where(eq(usersTable.id, t.assigneeId));
+      return {
+        id: t.id,
+        matterId: t.matterId,
+        title: t.title,
+        description: t.description ?? null,
+        status: t.status,
+        priority: t.priority,
+        dueDate: t.dueDate?.toISOString() ?? null,
+        assigneeId: t.assigneeId,
+        assigneeName: assignee?.name ?? null,
+        isAutoGen: t.isAutoGen,
+        createdAt: t.createdAt.toISOString(),
+      };
+    })
+  );
+
+  res.status(201).json(enriched);
 });
 
 router.patch("/matters/:id", async (req, res): Promise<void> => {

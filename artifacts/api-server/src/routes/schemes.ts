@@ -27,14 +27,20 @@ async function formatScheme(scheme: typeof schemesTable.$inferSelect) {
 
 router.get("/schemes", async (req, res): Promise<void> => {
   const queryParams = ListSchemesQueryParams.safeParse(req.query);
+
   let schemes = await db.select().from(schemesTable).orderBy(schemesTable.name);
+  if (queryParams.success && queryParams.data.agentId) schemes = schemes.filter((s) => s.agentId === queryParams.data.agentId);
 
-  if (queryParams.success && queryParams.data.agentId) {
-    schemes = schemes.filter((s) => s.agentId === queryParams.data.agentId);
-  }
+  const total = schemes.length;
 
-  const formatted = await Promise.all(schemes.map(formatScheme));
-  res.json(formatted);
+  const page = queryParams.success && queryParams.data.page ? Math.max(1, Number(queryParams.data.page)) : 1;
+  const limit = queryParams.success && queryParams.data.limit ? Math.max(1, Number(queryParams.data.limit)) : undefined;
+  const offset = limit ? (page - 1) * limit : 0;
+
+  const pageSlice = typeof limit === "number" ? schemes.slice(offset, offset + limit) : schemes;
+
+  const formatted = await Promise.all(pageSlice.map(formatScheme));
+  res.json({ schemes: formatted, total });
 });
 
 router.post("/schemes", async (req, res): Promise<void> => {

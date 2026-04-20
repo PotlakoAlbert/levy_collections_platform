@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, PlusCircle, Phone, Mail } from "lucide-react";
+import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -21,8 +22,9 @@ export function DebtorsPage() {
 
   const { data, isLoading } = useListDebtors({ page, limit, search: search || undefined });
 
-  const debtors = (data as any)?.debtors ?? [];
-  const total = (data as any)?.total ?? 0;
+  const raw = data as any;
+  const debtors = Array.isArray(raw) ? raw : raw?.debtors ?? [];
+  const total = raw?.total ?? (Array.isArray(raw) ? raw.length : 0);
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -32,10 +34,12 @@ export function DebtorsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Debtors</h1>
           <p className="text-sm text-muted-foreground mt-1">{total} registered debtors</p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Debtor
-        </Button>
+        <Link href="/debtors/new">
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Debtor
+          </Button>
+        </Link>
       </div>
 
       <Card>

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, PlusCircle, Building2, MapPin } from "lucide-react";
+import { Link } from "wouter";
 
 export function SchemesPage() {
   const [search, setSearch] = useState("");
@@ -14,8 +15,9 @@ export function SchemesPage() {
 
   const { data, isLoading } = useListSchemes({ page, limit, search: search || undefined });
 
-  const schemes = (data as any)?.schemes ?? [];
-  const total = (data as any)?.total ?? 0;
+  const raw = data as any;
+  const schemes = Array.isArray(raw) ? raw : raw?.schemes ?? [];
+  const total = raw?.total ?? (Array.isArray(raw) ? raw.length : 0);
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -25,10 +27,12 @@ export function SchemesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Schemes</h1>
           <p className="text-sm text-muted-foreground mt-1">{total} schemes registered</p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Scheme
-        </Button>
+        <Link href="/schemes/new">
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Scheme
+          </Button>
+        </Link>
       </div>
 
       <Card>

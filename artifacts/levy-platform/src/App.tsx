@@ -18,6 +18,9 @@ import { MattersPage } from "@/pages/matters";
 import { MatterDetailPage } from "@/pages/matter-detail";
 import { DebtorsPage } from "@/pages/debtors";
 import { SchemesPage } from "@/pages/schemes";
+import { CreateDebtorPage } from "@/pages/debtors/new";
+import { CreateSchemePage } from "@/pages/schemes/new";
+import { CreateMatterPage } from "@/pages/matters/new";
 import { DiaryPage } from "@/pages/diary";
 import { DocumentsPage } from "@/pages/documents";
 import { ReportsPage } from "@/pages/reports";
@@ -70,6 +73,11 @@ function Router() {
             <DashboardPage />
           </ProtectedRoute>
         </Route>
+        <Route path="/matters/new">
+          <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
+            <CreateMatterPage />
+          </ProtectedRoute>
+        </Route>
         <Route path="/matters/:id">
           {(params) => (
             <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
@@ -87,9 +95,19 @@ function Router() {
             <DebtorsPage />
           </ProtectedRoute>
         </Route>
+        <Route path="/debtors/new">
+          <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
+            <CreateDebtorPage />
+          </ProtectedRoute>
+        </Route>
         <Route path="/schemes">
           <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
             <SchemesPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/schemes/new">
+          <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
+            <CreateSchemePage />
           </ProtectedRoute>
         </Route>
         <Route path="/diary">

@@ -11,6 +11,11 @@ import paymentsRouter from "./payments";
 import tasksRouter from "./tasks";
 import reportsRouter from "./reports";
 import publicRouter from "./public";
+import postingCodesRouter from "./posting-codes";
+import transactionsRouter from "./transactions";
+import creditorsRouter from "./creditors";
+import requisitionsRouter from "./requisitions";
+import communicationsRouter from "./communications";
 
 const router: IRouter = Router();
 
@@ -24,6 +29,11 @@ router.use(mattersRouter);
 router.use(documentsRouter);
 router.use(paymentsRouter);
 router.use(tasksRouter);
+router.use(postingCodesRouter);
+router.use(transactionsRouter);
+router.use(creditorsRouter);
+router.use(requisitionsRouter);
+router.use(communicationsRouter);
 router.use(reportsRouter);
 router.use(publicRouter);
 

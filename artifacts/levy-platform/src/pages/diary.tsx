@@ -20,8 +20,9 @@ export function DiaryPage() {
 
   const updateTask = useUpdateTask();
 
-  const tasks = (data as any)?.tasks ?? [];
-  const total = (data as any)?.total ?? 0;
+  const raw = data as any;
+  const tasks = Array.isArray(raw) ? raw : raw?.tasks ?? [];
+  const total = raw?.total ?? (Array.isArray(raw) ? raw.length : 0);
 
   function completeTask(taskId: string) {
     updateTask.mutate(

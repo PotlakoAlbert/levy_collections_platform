@@ -25,8 +25,9 @@ export function MattersPage() {
     stage: stageFilter !== "ALL" ? stageFilter as any : undefined,
   });
 
-  const matters = (data as any)?.matters ?? [];
-  const total = (data as any)?.total ?? 0;
+  const raw = data as any;
+  const matters = Array.isArray(raw) ? raw : raw?.matters ?? [];
+  const total = raw?.total ?? (Array.isArray(raw) ? raw.length : 0);
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -36,10 +37,12 @@ export function MattersPage() {
           <h1 className="text-2xl font-bold tracking-tight">Matters</h1>
           <p className="text-sm text-muted-foreground mt-1">{total} total matters</p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Matter
-        </Button>
+        <Link href="/matters/new">
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Matter
+          </Button>
+        </Link>
       </div>
 
       <Card>

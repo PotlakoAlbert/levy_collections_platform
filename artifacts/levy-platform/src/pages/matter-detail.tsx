@@ -1,4 +1,8 @@
 import { useGetMatter, useUpdateMatterStage } from "@workspace/api-client-react";
+import { customFetch } from "@workspace/api-client-react/src/custom-fetch";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel, AlertDialogFooter } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import React, { useState } from "react";
 import { formatCurrency, formatDate, STAGE_COLORS, PRIORITY_COLORS } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +32,14 @@ export function MatterDetailPage({ id }: { id: string }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Local UI state (always declared to preserve hook order)
+  const [ptpSubmitting, setPtpSubmitting] = useState(false);
+  const [firstPaymentDate, setFirstPaymentDate] = useState("");
+  const [firstPaymentAmount, setFirstPaymentAmount] = useState("");
+  const [installmentDay, setInstallmentDay] = useState("1");
+  const [installmentAmount, setInstallmentAmount] = useState("");
+  const [promiseDate, setPromiseDate] = useState("");
+
   if (isLoading) {
     return <div className="flex justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
   }
@@ -44,6 +56,7 @@ export function MatterDetailPage({ id }: { id: string }) {
   const nextStage = currentStageIdx < STAGE_ORDER.length - 1 ? STAGE_ORDER[currentStageIdx + 1] : null;
 
   const totalOutstanding = (m.capitalArrears || 0) + (m.interest || 0) + (m.legalCosts || 0) - (m.totalPaid || 0);
+
 
   function handleAdvance() {
     if (!nextStage) return;
@@ -213,10 +226,107 @@ export function MatterDetailPage({ id }: { id: string }) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Clock className="h-4 w-4" /> Promise To Pay
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {m.ptp ? (
+              <div className="space-y-2">
+                <p className="text-sm">First payment: <span className="font-medium">{formatDate(m.ptp.firstPaymentDate)}</span> · <span className="font-semibold">{formatCurrency(m.ptp.firstPaymentAmount)}</span></p>
+                <p className="text-sm">Installment day: <span className="font-medium">{m.ptp.installmentDay}</span> · amount: <span className="font-semibold">{formatCurrency(m.ptp.installmentAmount)}</span></p>
+                <p className="text-xs text-muted-foreground">Promise recorded: {formatDate(m.ptp.promiseDate)}</p>
+                <div className="mt-2">
+                  <Button variant="destructive" size="sm" onClick={async () => {
+                    try {
+                      setPtpSubmitting(true);
+                      await customFetch(`/api/matters/${id}/ptp/deactivate`, { method: "PATCH" });
+                      queryClient.invalidateQueries({ queryKey: ["matter", id] });
+                      toast({ title: "PTP deactivated" });
+                    } catch (e) {
+                      toast({ title: "Error", description: "Failed to deactivate PTP", variant: "destructive" });
+                    } finally {
+                      setPtpSubmitting(false);
+                    }
+                  }} disabled={ptpSubmitting}>Deactivate</Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm">Create Promise To Pay</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Create Promise To Pay</AlertDialogTitle>
+                      <AlertDialogDescription>Capture the first payment and instalment schedule for this matter.</AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <div className="space-y-3 mt-2">
+                      <div>
+                        <label className="text-xs text-muted-foreground">First payment date</label>
+                        <Input type="date" value={firstPaymentDate} onChange={(e) => setFirstPaymentDate(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">First payment amount</label>
+                        <Input type="number" value={firstPaymentAmount} onChange={(e) => setFirstPaymentAmount(e.target.value)} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-muted-foreground">Installment day</label>
+                          <Input type="number" value={installmentDay} onChange={(e) => setInstallmentDay(e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">Installment amount</label>
+                          <Input type="number" value={installmentAmount} onChange={(e) => setInstallmentAmount(e.target.value)} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Promise date</label>
+                        <Input type="date" value={promiseDate} onChange={(e) => setPromiseDate(e.target.value)} />
+                      </div>
+                    </div>
+
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={async () => {
+                        try {
+                          setPtpSubmitting(true);
+                          await customFetch(`/api/matters/${id}/ptp`, { method: "POST", body: JSON.stringify({ firstPaymentDate, firstPaymentAmount, installmentDay, installmentAmount, promiseDate }), headers: { "content-type": "application/json" } });
+                          queryClient.invalidateQueries({ queryKey: ["matter", id] });
+                          toast({ title: "PTP created" });
+                        } catch (e) {
+                          toast({ title: "Error", description: "Failed to create PTP", variant: "destructive" });
+                        } finally {
+                          setPtpSubmitting(false);
+                        }
+                      }}>Create</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4" /> Tasks
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="flex justify-end mb-3">
+              <Button size="sm" onClick={async () => {
+                try {
+                  await customFetch(`/api/matters/${id}/generate-tasks`, { method: "POST", body: JSON.stringify({ stage: m.stage }), headers: { "content-type": "application/json" } });
+                  queryClient.invalidateQueries({ queryKey: ["matter", id] });
+                  toast({ title: "Tasks generated", description: `Tasks for ${m.stage} created.` });
+                } catch (e) {
+                  toast({ title: "Error", description: "Failed to generate tasks", variant: "destructive" });
+                }
+              }}>Generate Tasks</Button>
+            </div>
             {tasks.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No tasks</p>
             ) : (

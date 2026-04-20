@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, debtorsTable, mattersTable } from "@workspace/db";
-import { eq, count, or, ilike } from "drizzle-orm";
+import { eq, count, or, ilike, and } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
 import { CreateDebtorBody, UpdateDebtorBody, GetDebtorParams, UpdateDebtorParams, ListDebtorsQueryParams, GetDebtorMattersParams } from "@workspace/api-zod";
 
@@ -34,27 +34,52 @@ async function formatDebtor(debtor: typeof debtorsTable.$inferSelect, includeCou
 
 router.get("/debtors", async (req, res): Promise<void> => {
   const queryParams = ListDebtorsQueryParams.safeParse(req.query);
-  let debtors = await db.select().from(debtorsTable).orderBy(debtorsTable.lastName);
 
+  // Build WHERE expression for DB-level filtering
+  let whereExpr: any = undefined;
   if (queryParams.success) {
+    const clauses: any[] = [];
     if (queryParams.data.status) {
-      debtors = debtors.filter((d) => d.status === queryParams.data.status);
+      clauses.push(eq(debtorsTable.status, queryParams.data.status));
     }
     if (queryParams.data.search) {
-      const q = queryParams.data.search.toLowerCase();
-      debtors = debtors.filter(
-        (d) =>
-          d.firstName.toLowerCase().includes(q) ||
-          d.lastName.toLowerCase().includes(q) ||
-          (d.idNumber ?? "").toLowerCase().includes(q) ||
-          (d.companyName ?? "").toLowerCase().includes(q) ||
-          (d.email ?? "").toLowerCase().includes(q)
+      const q = `%${queryParams.data.search}%`;
+      clauses.push(
+        or(
+          ilike(debtorsTable.firstName, q),
+          ilike(debtorsTable.lastName, q),
+          ilike(debtorsTable.idNumber, q),
+          ilike(debtorsTable.companyName, q),
+          ilike(debtorsTable.email, q),
+        ),
       );
     }
+
+    if (clauses.length === 1) whereExpr = clauses[0];
+    else if (clauses.length > 1) whereExpr = and(...clauses);
   }
 
+  // Compute total matching count
+  const totalRow = whereExpr
+    ? await db.select({ count: count() }).from(debtorsTable).where(whereExpr)
+    : await db.select({ count: count() }).from(debtorsTable);
+  const total = Number(totalRow?.[0]?.count ?? 0);
+
+  // Pagination
+  const page = queryParams.success && queryParams.data.page ? Math.max(1, Number(queryParams.data.page)) : 1;
+  const limit = queryParams.success && queryParams.data.limit ? Math.max(1, Number(queryParams.data.limit)) : undefined;
+  const offset = limit ? (page - 1) * limit : undefined;
+
+  // Query rows with optional pagination
+  let rowsQuery = db.select().from(debtorsTable).orderBy(debtorsTable.lastName);
+  if (whereExpr) rowsQuery = rowsQuery.where(whereExpr);
+  if (limit) rowsQuery = rowsQuery.limit(limit as any);
+  if (offset) rowsQuery = rowsQuery.offset(offset as any);
+
+  const debtors = await rowsQuery;
+
   const formatted = await Promise.all(debtors.map((d) => formatDebtor(d)));
-  res.json(formatted);
+  res.json({ debtors: formatted, total });
 });
 
 router.post("/debtors", async (req, res): Promise<void> => {

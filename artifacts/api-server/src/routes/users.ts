@@ -21,7 +21,7 @@ function formatUser(user: typeof usersTable.$inferSelect) {
 
 router.get("/users", async (_req, res): Promise<void> => {
   const users = await db.select().from(usersTable).orderBy(usersTable.name);
-  res.json(users.map(formatUser));
+  res.json({ users: users.map(formatUser) });
 });
 
 router.post("/users", requireRole("ADMIN"), async (req, res): Promise<void> => {
