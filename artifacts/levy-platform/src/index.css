@@ -1,57 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import "tw-animate-css";
-@plugin "@tailwindcss/typography";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-card-border: hsl(var(--card-border));
-
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-popover-border: hsl(var(--popover-border));
-
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-  --color-sidebar: hsl(var(--sidebar));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
-
-  --font-sans: var(--app-font-sans);
-  --font-serif: var(--app-font-serif);
-  --font-mono: var(--app-font-mono);
-
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
 
 :root {
   --background: 0 0% 100%;
@@ -138,4 +89,48 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+}
+
+/* Design system utilities and micro-interactions */
+@layer components {
+  .container-max {
+    max-width: 72rem; /* 1152px ~ 6xl */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .btn-ghost-interaction {
+    @apply transform-gpu transition-transform duration-200 ease-out hover:scale-105;
+  }
+
+  .card-lift {
+    @apply transition-transform duration-200 ease-out transform hover:-translate-y-1 hover:shadow-soft-lg;
+  }
+
+  .focus-glow:focus {
+    box-shadow: 0 6px 18px rgba(66,145,255,0.12);
+    outline: none;
+  }
+}
+
+@layer utilities {
+  .hover-elevate {
+    @apply transform-gpu transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-soft-md;
+  }
+  .hover-scale-slight {
+    @apply transform-gpu transition-transform duration-200 ease-out hover:scale-102;
+  }
+}
+
+/* subtle animated background helpers */
+@keyframes slow-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* small helper for a soft radial glow */
+.radial-glow {
+  background: radial-gradient(closest-side, rgba(99,102,241,0.12), transparent 40%);
 }

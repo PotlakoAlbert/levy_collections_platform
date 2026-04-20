@@ -10,6 +10,7 @@ import documentsRouter from "./documents";
 import paymentsRouter from "./payments";
 import tasksRouter from "./tasks";
 import reportsRouter from "./reports";
+import publicRouter from "./public";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(documentsRouter);
 router.use(paymentsRouter);
 router.use(tasksRouter);
 router.use(reportsRouter);
+router.use(publicRouter);
 
 export default router;

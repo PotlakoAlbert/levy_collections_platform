@@ -2,12 +2,17 @@ import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wo
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { setBaseUrl } from "@workspace/api-client-react";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { Layout } from "@/components/layout";
 import { ReactNode } from "react";
 
+// Configure API base URL
+setBaseUrl("http://localhost:8080");
+
 import NotFound from "@/pages/not-found";
 import { LoginPage } from "@/pages/login";
+import { ContactPage } from "@/pages/contact";
 import { DashboardPage } from "@/pages/dashboard";
 import { MattersPage } from "@/pages/matters";
 import { MatterDetailPage } from "@/pages/matter-detail";
@@ -58,6 +63,7 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/login" component={LoginPage} />
+        <Route path="/contact" component={ContactPage} />
         <Route path="/" component={HomeRedirect} />
         <Route path="/dashboard">
           <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>

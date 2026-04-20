@@ -50,84 +50,99 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="h-16 w-16 bg-primary rounded-xl flex items-center justify-center mb-4 shadow-lg">
-            <Scale className="h-8 w-8 text-primary-foreground" />
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container-max grid grid-cols-1 md:grid-cols-2 min-h-screen items-center">
+        {/* Hero column */}
+        <div className="hidden md:flex items-center justify-center px-6">
+          <div className="max-w-lg">
+            <div className="mb-6">
+              <h1 className="text-hero font-extrabold">Premium, modern collections</h1>
+              <p className="mt-4 text-body-lg text-muted-foreground">Lean, secure, and crafted for legal teams — manage levies, matters and collections with clarity.</p>
+            </div>
+            <div className="flex gap-4">
+              <Button onClick={() => setLocation("/contact")} className="btn-ghost-interaction px-5 py-3 bg-primary text-primary-foreground shadow-sm">Get Started</Button>
+              <Button variant="ghost" onClick={() => setLocation("/contact")} className="btn-ghost-interaction px-5 py-3">Learn More</Button>
+            </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Levy<span className="text-primary">Connect</span>
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wider">
-            Practice Management Platform
-          </p>
         </div>
 
-        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-xl font-bold text-center">Sign in to your account</CardTitle>
-            <CardDescription className="text-center">
-              Enter your email and password to access the platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {errorMsg && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertDescription>{errorMsg}</AlertDescription>
-              </Alert>
-            )}
+        {/* Login column */}
+        <div className="flex items-center justify-center p-8">
+          <div className="w-full max-w-md">
+            <div className="flex flex-col items-center justify-center text-center mb-6 md:hidden">
+              <div className="h-16 w-16 bg-primary rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                <Scale className="h-8 w-8 text-primary-foreground" />
+              </div>
+              <h2 className="text-2xl font-extrabold tracking-tight">Levy<span className="text-primary">Connect</span></h2>
+              <p className="mt-2 text-sm text-muted-foreground font-medium uppercase tracking-wider">Practice Management Platform</p>
+            </div>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Email Address</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="you@lawfirm.co.za" 
-                          autoComplete="email"
-                          className="h-11"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Password</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          autoComplete="current-password"
-                          className="h-11"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button 
-                  type="submit" 
-                  className="w-full h-11 text-base font-medium mt-2" 
-                  disabled={loginMutation.isPending}
-                >
-                  {loginMutation.isPending ? "Signing in..." : "Sign In"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+            <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20">
+              <CardHeader className="space-y-1 pb-6">
+                <CardTitle className="text-xl font-bold text-center">Sign in to your account</CardTitle>
+                <CardDescription className="text-center">
+                  Enter your email and password to access the platform
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {errorMsg && (
+                  <Alert variant="destructive" className="mb-6">
+                    <AlertDescription>{errorMsg}</AlertDescription>
+                  </Alert>
+                )}
+
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email Address</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="you@lawfirm.co.za" 
+                              autoComplete="email"
+                              className="h-11"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="••••••••" 
+                              autoComplete="current-password"
+                              className="h-11"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full h-11 text-base font-medium mt-2" 
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
