@@ -91,4 +91,21 @@ router.patch("/users/:id", requireRole("ADMIN"), async (req, res): Promise<void>
   res.json(formatUser(user));
 });
 
+// Delete user (admin only)
+router.delete("/users/:id", requireRole("ADMIN"), async (req, res): Promise<void> => {
+  const params = GetUserParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [deleted] = await db.delete(usersTable).where(eq(usersTable.id, params.data.id)).returning();
+  if (!deleted) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  res.json({ id: deleted.id });
+});
+
 export default router;

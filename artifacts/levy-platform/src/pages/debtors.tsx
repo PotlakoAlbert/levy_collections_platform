@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useListDebtors } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, PlusCircle, Phone, Mail } from "lucide-react";
 import { Link } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { customFetch } from "@workspace/api-client-react/src/custom-fetch";
 import { cn } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -62,34 +65,9 @@ export function DebtorsPage() {
             <div className="text-center py-12 text-muted-foreground">No debtors found</div>
           ) : (
             <div className="grid gap-3">
-              {debtors.map((debtor: any) => (
-                <div key={debtor.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/40 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-                      {debtor.firstName?.[0]}{debtor.lastName?.[0]}
-                    </div>
-                    <div>
-                      <p className="font-semibold">{debtor.firstName} {debtor.lastName}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{debtor.idNumber}</p>
-                    </div>
-                  </div>
-                  <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-                    {debtor.email && (
-                      <span className="flex items-center gap-1.5">
-                        <Mail className="h-3.5 w-3.5" />{debtor.email}
-                      </span>
-                    )}
-                    {debtor.phone && (
-                      <span className="flex items-center gap-1.5">
-                        <Phone className="h-3.5 w-3.5" />{debtor.phone}
-                      </span>
-                    )}
-                  </div>
-                  <Badge className={cn("text-xs", STATUS_COLORS[debtor.status] || STATUS_COLORS.ACTIVE)}>
-                    {debtor.status}
-                  </Badge>
-                </div>
-              ))}
+                {debtors.map((debtor: any) => (
+                  <DebtorRow key={debtor.id} debtor={debtor} />
+                ))}
             </div>
           )}
 
@@ -104,6 +82,58 @@ export function DebtorsPage() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function DebtorRow({ debtor }: { debtor: any }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const initials = `${debtor.firstName?.[0] ?? ""}${debtor.lastName?.[0] ?? ""}`;
+
+  async function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!confirm("Delete this debtor? This cannot be undone.")) return;
+    try {
+      await customFetch(`/api/debtors/${debtor.id}`, { method: "DELETE" });
+      queryClient.invalidateQueries({ queryKey: ["debtors"] });
+      toast({ title: "Deleted", description: "Debtor deleted" });
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to delete debtor", variant: "destructive" });
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/40 transition-colors">
+      <Link href={`/debtors/${debtor.id}`} className="flex items-center gap-4 flex-1 no-underline">
+        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+          {initials}
+        </div>
+        <div>
+          <p className="font-semibold">{debtor.firstName} {debtor.lastName}</p>
+          <p className="text-xs text-muted-foreground font-mono">{debtor.idNumber}</p>
+        </div>
+      </Link>
+
+      <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+        {debtor.email && (
+          <span className="flex items-center gap-1.5">
+            <Mail className="h-3.5 w-3.5" />{debtor.email}
+          </span>
+        )}
+        {debtor.phone && (
+          <span className="flex items-center gap-1.5">
+            <Phone className="h-3.5 w-3.5" />{debtor.phone}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Badge className={cn("text-xs", STATUS_COLORS[debtor.status] || STATUS_COLORS.ACTIVE)}>{debtor.status}</Badge>
+        <Button variant="ghost" size="sm" onClick={handleDelete}>Delete</Button>
+      </div>
     </div>
   );
 }

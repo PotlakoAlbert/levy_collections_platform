@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useListUsers, useCreateUser } from "@workspace/api-client-react";
+import { useListUsers, useCreateUser, useUpdateUser } from "@workspace/api-client-react";
+import { customFetch } from "@workspace/api-client-react/src/custom-fetch";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,12 @@ export function SettingsPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [role, setRole] = React.useState("COLLECTOR");
+  const [editingUser, setEditingUser] = React.useState<any | null>(null);
+  const [editName, setEditName] = React.useState("");
+  const [editEmail, setEditEmail] = React.useState("");
+  const [editPassword, setEditPassword] = React.useState("");
+  const [editRole, setEditRole] = React.useState("COLLECTOR");
+  const updateUser = useUpdateUser();
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -124,6 +131,61 @@ export function SettingsPage() {
                     <Badge variant={user.isActive ? "default" : "secondary"} className="text-xs">
                       {user.isActive ? "Active" : "Inactive"}
                     </Badge>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" onClick={() => { setEditName(user.name); setEditEmail(user.email); setEditRole(user.role ?? "COLLECTOR"); setEditPassword(""); }}>Edit</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Edit User</AlertDialogTitle>
+                          <AlertDialogDescription>Update user details</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="space-y-3 mt-2">
+                          <Input placeholder="Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                          <Input placeholder="Email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+                          <Input placeholder="Password (leave blank to keep)" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
+                          <div>
+                            <label className="text-xs font-semibold text-muted-foreground">Role</label>
+                            <Select value={editRole} onValueChange={setEditRole}>
+                              <SelectTrigger className="w-48 h-8 mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ADMIN">ADMIN</SelectItem>
+                                <SelectItem value="ATTORNEY">ATTORNEY</SelectItem>
+                                <SelectItem value="COLLECTOR">COLLECTOR</SelectItem>
+                                <SelectItem value="AGENT_VIEWER">AGENT_VIEWER</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => {
+                            updateUser.mutate({ id: user.id, data: { name: editName, email: editEmail, password: editPassword || undefined, role: editRole } } as any, {
+                              onSuccess: () => {
+                                queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+                                setEditingUser(null);
+                                toast({ title: 'Updated', description: 'User updated' });
+                              },
+                              onError: () => {
+                                toast({ title: 'Error', description: 'Failed to update user', variant: 'destructive' });
+                              }
+                            });
+                          }}>Save</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <Button size="sm" variant="ghost" onClick={async () => {
+                      if (!confirm('Delete this user?')) return;
+                      try {
+                        await customFetch(`/api/users/${user.id}`, { method: 'DELETE' });
+                        queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+                        toast({ title: 'Deleted', description: 'User deleted' });
+                      } catch (err) {
+                        toast({ title: 'Error', description: 'Failed to delete user', variant: 'destructive' });
+                      }
+                    }}>Delete</Button>
                   </div>
                 </div>
               ))}

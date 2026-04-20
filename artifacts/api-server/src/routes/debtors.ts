@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, debtorsTable, mattersTable } from "@workspace/db";
 import { eq, count, or, ilike, and } from "drizzle-orm";
-import { authMiddleware } from "../lib/auth";
+import { authMiddleware, requireRole } from "../lib/auth";
 import { CreateDebtorBody, UpdateDebtorBody, GetDebtorParams, UpdateDebtorParams, ListDebtorsQueryParams, GetDebtorMattersParams } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -157,6 +157,23 @@ router.get("/debtors/:id/matters", async (req, res): Promise<void> => {
   }));
 
   res.json(formatted);
+});
+
+// Delete debtor (admin only)
+router.delete("/debtors/:id", requireRole("ADMIN"), async (req, res): Promise<void> => {
+  const params = GetDebtorParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [deleted] = await db.delete(debtorsTable).where(eq(debtorsTable.id, params.data.id)).returning();
+  if (!deleted) {
+    res.status(404).json({ error: "Debtor not found" });
+    return;
+  }
+
+  res.json({ id: deleted.id });
 });
 
 export default router;

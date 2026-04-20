@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, documentsTable, mattersTable, debtorsTable, schemesTable, managingAgentsTable, interestRatesTable } from "@workspace/db";
+import { db, documentsTable, mattersTable, debtorsTable, schemesTable, managingAgentsTable, interestRatesTable, communicationsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
 import { ListDocumentsQueryParams, GenerateDocumentBody, BulkGenerateDocumentsBody, DownloadDocumentParams } from "@workspace/api-zod";
@@ -272,6 +272,60 @@ router.post("/documents/bulk-generate", async (req, res): Promise<void> => {
     documents: results,
     errors,
   });
+});
+
+// Send a generated document via channels (EMAIL, WHATSAPP, etc.)
+router.post("/documents/:id/send", async (req, res): Promise<void> => {
+  const docId = String(req.params.id);
+  const body = req.body ?? {};
+  const channels: string[] = Array.isArray(body.channels) ? body.channels : [];
+
+  if (channels.length === 0) {
+    res.status(400).json({ error: "channels array is required" });
+    return;
+  }
+
+  const [doc] = await db.select().from(documentsTable).where(eq(documentsTable.id, docId));
+  if (!doc) {
+    res.status(404).json({ error: "Document not found" });
+    return;
+  }
+
+  const [matter] = await db.select().from(mattersTable).where(eq(mattersTable.id, doc.matterId));
+  const [debtor] = matter ? await db.select().from(debtorsTable).where(eq(debtorsTable.id, matter.debtorId)) : [null];
+
+  const createdBy = req.user!.id;
+  const now = new Date();
+
+  // For each requested channel, create a communications record (simulated send)
+  for (const ch of channels) {
+    let toVal = String(body.to ?? "");
+    if (!toVal && debtor) {
+      if (ch === "EMAIL") toVal = debtor.email ?? "";
+      if (ch === "WHATSAPP") toVal = debtor.whatsapp ?? debtor.phone ?? "";
+    }
+
+    if (!toVal) continue; // skip if no recipient
+
+    const message = String(body.message ?? `Please see attached document: ${doc.fileUrl}`);
+
+    await db.insert(communicationsTable).values({
+      matterId: doc.matterId,
+      to: toVal,
+      channel: ch,
+      templateId: null,
+      body: message + "\n\n" + doc.fileUrl,
+      sentAt: now,
+      status: "SENT",
+      createdById: createdBy,
+    }).returning();
+  }
+
+  // Mark document as sent via these channels
+  const sentVia = channels.join(",");
+  const [updated] = await db.update(documentsTable).set({ sentVia, sentAt: now }).where(eq(documentsTable.id, docId)).returning();
+
+  res.json({ id: updated.id, sentVia: updated.sentVia, sentAt: updated.sentAt?.toISOString() ?? now.toISOString() });
 });
 
 router.get("/documents/:id/download", async (req, res): Promise<void> => {
