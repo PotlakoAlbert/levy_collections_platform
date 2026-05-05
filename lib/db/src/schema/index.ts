@@ -14,3 +14,4 @@ export * from "./transactions";
 export * from "./creditors";
 export * from "./payment_requisitions";
 export * from "./communications";
+export * from "./whatsapp_messages";

@@ -35,9 +35,29 @@ export const STAGE_COLORS: Record<string, string> = {
   CLOSED: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
+/** Hex colour values for inline CSS use (charts, kanban borders, etc.) */
+export const STAGE_HEX_COLORS: Record<string, string> = {
+  LOD: "#3b82f6",
+  S129: "#eab308",
+  SUMMONS: "#f97316",
+  JUDGMENT: "#ef4444",
+  WRIT: "#a855f7",
+  RULE46: "#6366f1",
+  SALE: "#f43f5e",
+  CLOSED: "#6b7280",
+};
+
 export const PRIORITY_COLORS: Record<string, string> = {
   LOW: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
   MEDIUM: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
   HIGH: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
   CRITICAL: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+};
+
+/** Hex colour values for inline CSS use (kanban badges, etc.) */
+export const PRIORITY_HEX_COLORS: Record<string, string> = {
+  LOW: "#22c55e",
+  MEDIUM: "#eab308",
+  HIGH: "#f97316",
+  CRITICAL: "#ef4444",
 };

@@ -11,12 +11,14 @@ import {
   FileText,
   BarChart3,
   Settings,
-  LogOut
+  LogOut,
+  Columns3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
+  { href: "/pipeline", label: "Pipeline", icon: Columns3, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/matters", label: "Matters", icon: Briefcase, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/debtors", label: "Debtors", icon: Users, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/schemes", label: "Schemes", icon: Building2, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },

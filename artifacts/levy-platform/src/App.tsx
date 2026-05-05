@@ -26,6 +26,7 @@ import { DiaryPage } from "@/pages/diary";
 import { DocumentsPage } from "@/pages/documents";
 import { ReportsPage } from "@/pages/reports";
 import { SettingsPage } from "@/pages/settings";
+import { PipelinePage } from "@/pages/pipeline";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +73,11 @@ function Router() {
         <Route path="/dashboard">
           <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
             <DashboardPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/pipeline">
+          <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
+            <PipelinePage />
           </ProtectedRoute>
         </Route>
         <Route path="/matters/new">

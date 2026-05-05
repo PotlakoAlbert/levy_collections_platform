@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, mattersTable, debtorsTable, schemesTable, managingAgentsTable, usersTable, stageHistoryTable, tasksTable, documentsTable, paymentsTable, promiseToPayTable } from "@workspace/db";
+import { db, mattersTable, debtorsTable, schemesTable, managingAgentsTable, usersTable, stageHistoryTable, tasksTable, documentsTable, paymentsTable, promiseToPayTable, whatsappMessagesTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
 import { generateMatterReference } from "../lib/reference";
@@ -184,6 +184,7 @@ router.get("/matters/:id", async (req, res): Promise<void> => {
   const payments = await db.select().from(paymentsTable).where(eq(paymentsTable.matterId, matter.id));
   const history = await db.select().from(stageHistoryTable).where(eq(stageHistoryTable.matterId, matter.id));
   const ptps = await db.select().from(promiseToPayTable).where(eq(promiseToPayTable.matterId, matter.id));
+  const whatsappMessages = await db.select().from(whatsappMessagesTable).where(eq(whatsappMessagesTable.matterId, matter.id));
 
   // Enrich history with user names
   const enrichedHistory = await Promise.all(
@@ -327,6 +328,14 @@ router.get("/matters/:id", async (req, res): Promise<void> => {
         updatedAt: active.updatedAt.toISOString(),
       };
     })(),
+    whatsappMessages: whatsappMessages.map((m) => ({
+      id: m.id,
+      direction: m.direction,
+      messageType: m.messageType,
+      content: m.content,
+      status: m.status,
+      createdAt: m.createdAt.toISOString(),
+    })),
   });
 });
 
@@ -619,6 +628,79 @@ router.get("/matters/:id/financials", async (req, res): Promise<void> => {
     totalOutstanding,
     runningBalance: totalOutstanding,
   });
+});
+
+// Send WhatsApp message
+router.post("/matters/:id/whatsapp/send", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = req.body ?? {};
+  const { content, recipientPhone } = body;
+
+  if (!content || !recipientPhone) {
+    res.status(400).json({ error: "content and recipientPhone are required" });
+    return;
+  }
+
+  const [matter] = await db.select().from(mattersTable).where(eq(mattersTable.id, params.data.id));
+  if (!matter) {
+    res.status(404).json({ error: "Matter not found" });
+    return;
+  }
+
+  // Create message record
+  const [message] = await db.insert(whatsappMessagesTable).values({
+    matterId: matter.id,
+    debtorId: matter.debtorId,
+    direction: "OUTBOUND",
+    messageType: "text",
+    content: String(content),
+    status: "QUEUED",
+    createdById: req.user!.id,
+  }).returning();
+
+  // TODO: Integrate with Meta WhatsApp Business API
+  // For now, we'll log it and mark as sent
+  // In production, this would call the WhatsApp API with the message
+
+  // Update status to SENT (simulated)
+  const [updatedMessage] = await db.update(whatsappMessagesTable).set({ status: "SENT" }).where(eq(whatsappMessagesTable.id, message.id)).returning();
+
+  res.status(201).json({
+    id: updatedMessage.id,
+    matterId: updatedMessage.matterId,
+    debtorId: updatedMessage.debtorId,
+    direction: updatedMessage.direction,
+    content: updatedMessage.content,
+    status: updatedMessage.status,
+    createdAt: updatedMessage.createdAt.toISOString(),
+  });
+});
+
+// Get WhatsApp messages for a matter
+router.get("/matters/:id/whatsapp/messages", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const messages = await db.select().from(whatsappMessagesTable).where(eq(whatsappMessagesTable.matterId, params.data.id)).orderBy(whatsappMessagesTable.createdAt);
+
+  const formatted = messages.map((m) => ({
+    id: m.id,
+    direction: m.direction,
+    messageType: m.messageType,
+    content: m.content,
+    status: m.status,
+    createdAt: m.createdAt.toISOString(),
+  }));
+
+  res.json(formatted);
 });
 
 export default router;

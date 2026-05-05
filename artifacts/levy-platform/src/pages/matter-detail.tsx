@@ -9,19 +9,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowRight, Phone, Mail, MapPin, CheckCircle2, Clock, History } from "lucide-react";
+import { ArrowLeft, ArrowRight, Phone, Mail, MapPin, CheckCircle2, Clock, History, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { PromiseToPayDialog } from "@/components/matters/PromiseToPayDialog";
+import { GenerateTasksDialog } from "@/components/matters/GenerateTasksDialog";
+import { WhatsAppMessaging } from "@/components/matters/WhatsAppMessaging";
 
 const STAGE_ORDER = ["LOD", "S129", "SUMMONS", "JUDGMENT", "WRIT", "RULE46", "SALE", "CLOSED"];
 
 function StatCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={cn("p-4 rounded-lg border", highlight ? "border-primary/20 bg-primary/5" : "bg-muted/30")}>
+    <div className={cn("p-2 sm:p-3 md:p-4 rounded-lg border", highlight ? "border-primary/20 bg-primary/5" : "bg-muted/30")}>
       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{label}</p>
-      <p className={cn("text-xl font-bold tabular-nums", highlight ? "text-primary" : "")}>{value}</p>
+      <p className={cn("text-lg sm:text-xl font-bold tabular-nums", highlight ? "text-primary" : "")}>{value}</p>
     </div>
   );
 }
@@ -76,47 +79,49 @@ export function MatterDetailPage({ id }: { id: string }) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="space-y-6 px-2 sm:px-4 md:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <Link href="/matters">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="w-fit">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Matters
           </Button>
         </Link>
         <div className="flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold font-mono tracking-tight">{m.reference}</h1>
-            <Badge className={cn("text-sm font-semibold", STAGE_COLORS[m.stage])}>
-              {m.stage}
-            </Badge>
-            <Badge variant="outline" className={cn("text-xs", PRIORITY_COLORS[m.priority])}>
-              {m.priority}
-            </Badge>
-            <span className="text-sm text-muted-foreground">Assigned: {m.assignedToName || "Unassigned"}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight">{m.reference}</h1>
+            <div className="flex flex-wrap gap-2">
+              <Badge className={cn("text-xs sm:text-sm font-semibold", STAGE_COLORS[m.stage])}>
+                {m.stage}
+              </Badge>
+              <Badge variant="outline" className={cn("text-xs", PRIORITY_COLORS[m.priority])}>
+                {m.priority}
+              </Badge>
+            </div>
+            <span className="text-xs sm:text-sm text-muted-foreground">Assigned: {m.assignedToName || "Unassigned"}</span>
           </div>
         </div>
         {nextStage && m.stage !== "CLOSED" && (
-          <Button onClick={handleAdvance} disabled={advanceStage.isPending}>
+          <Button onClick={handleAdvance} disabled={advanceStage.isPending} size="sm" className="w-full sm:w-auto gap-2">
             Advance to {nextStage}
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <ArrowRight className="h-4 w-4" />
           </Button>
         )}
       </div>
 
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard label="Capital Arrears" value={formatCurrency(m.capitalArrears)} />
         <StatCard label="Interest Accrued" value={formatCurrency(m.interest)} />
         <StatCard label="Legal Costs" value={formatCurrency(m.legalCosts)} />
         <StatCard label="Total Outstanding" value={formatCurrency(totalOutstanding)} highlight />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Debtor</CardTitle>
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground">Debtor</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
             {m.debtor ? (
               <>
                 <p className="font-semibold text-base">{m.debtor.firstName} {m.debtor.lastName}</p>
@@ -146,10 +151,10 @@ export function MatterDetailPage({ id }: { id: string }) {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Scheme</CardTitle>
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground">Scheme</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
             {m.scheme ? (
               <>
                 <p className="font-semibold text-base">{m.scheme.name}</p>
@@ -170,10 +175,10 @@ export function MatterDetailPage({ id }: { id: string }) {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Timeline</CardTitle>
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground">Timeline</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-2 text-xs sm:text-sm">
             {[
               { label: "Interest From", date: m.interestFromDate },
               { label: "LOD Sent", date: m.lodDate },
@@ -191,14 +196,14 @@ export function MatterDetailPage({ id }: { id: string }) {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> Payments Received
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Payments Received
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-xs sm:text-sm">
             {payments.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No payments recorded</p>
             ) : (
@@ -224,109 +229,72 @@ export function MatterDetailPage({ id }: { id: string }) {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Clock className="h-4 w-4" /> Promise To Pay
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Promise To Pay
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-xs sm:text-sm">
             {m.ptp ? (
-              <div className="space-y-2">
-                <p className="text-sm">First payment: <span className="font-medium">{formatDate(m.ptp.firstPaymentDate)}</span> · <span className="font-semibold">{formatCurrency(m.ptp.firstPaymentAmount)}</span></p>
-                <p className="text-sm">Installment day: <span className="font-medium">{m.ptp.installmentDay}</span> · amount: <span className="font-semibold">{formatCurrency(m.ptp.installmentAmount)}</span></p>
-                <p className="text-xs text-muted-foreground">Promise recorded: {formatDate(m.ptp.promiseDate)}</p>
-                <div className="mt-2">
-                  <Button variant="destructive" size="sm" onClick={async () => {
+              <div className="space-y-3">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm font-medium text-green-900 mb-2">Active Agreement</p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-green-800">First payment:</span>
+                      <span className="font-semibold">{formatCurrency(m.ptp.firstPaymentAmount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-green-800">Due:</span>
+                      <span className="font-semibold">{formatDate(m.ptp.firstPaymentDate)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-green-800">Installments:</span>
+                      <span className="font-semibold">{formatCurrency(m.ptp.installmentAmount)} on day {m.ptp.installmentDay}</span>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={async () => {
                     try {
-                      setPtpSubmitting(true);
-                      await customFetch(`/api/matters/${id}/ptp/deactivate`, { method: "PATCH" });
+                      const response = await fetch(`/api/matters/${id}/ptp/deactivate`, { method: "PATCH" });
+                      if (!response.ok) throw new Error("Failed");
                       queryClient.invalidateQueries({ queryKey: ["matter", id] });
                       toast({ title: "PTP deactivated" });
                     } catch (e) {
                       toast({ title: "Error", description: "Failed to deactivate PTP", variant: "destructive" });
-                    } finally {
-                      setPtpSubmitting(false);
                     }
-                  }} disabled={ptpSubmitting}>Deactivate</Button>
-                </div>
+                  }}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Deactivate
+                </Button>
               </div>
             ) : (
-              <div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm">Create Promise To Pay</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Create Promise To Pay</AlertDialogTitle>
-                      <AlertDialogDescription>Capture the first payment and instalment schedule for this matter.</AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    <div className="space-y-3 mt-2">
-                      <div>
-                        <label className="text-xs text-muted-foreground">First payment date</label>
-                        <Input type="date" value={firstPaymentDate} onChange={(e) => setFirstPaymentDate(e.target.value)} />
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground">First payment amount</label>
-                        <Input type="number" value={firstPaymentAmount} onChange={(e) => setFirstPaymentAmount(e.target.value)} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-xs text-muted-foreground">Installment day</label>
-                          <Input type="number" value={installmentDay} onChange={(e) => setInstallmentDay(e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="text-xs text-muted-foreground">Installment amount</label>
-                          <Input type="number" value={installmentAmount} onChange={(e) => setInstallmentAmount(e.target.value)} />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground">Promise date</label>
-                        <Input type="date" value={promiseDate} onChange={(e) => setPromiseDate(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={async () => {
-                        try {
-                          setPtpSubmitting(true);
-                          await customFetch(`/api/matters/${id}/ptp`, { method: "POST", body: JSON.stringify({ firstPaymentDate, firstPaymentAmount, installmentDay, installmentAmount, promiseDate }), headers: { "content-type": "application/json" } });
-                          queryClient.invalidateQueries({ queryKey: ["matter", id] });
-                          toast({ title: "PTP created" });
-                        } catch (e) {
-                          toast({ title: "Error", description: "Failed to create PTP", variant: "destructive" });
-                        } finally {
-                          setPtpSubmitting(false);
-                        }
-                      }}>Create</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+              <PromiseToPayDialog
+                matterId={id}
+                debtorName={m.debtor ? `${m.debtor.firstName} ${m.debtor.lastName}` : "Debtor"}
+                outstandingAmount={totalOutstanding}
+              />
             )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Clock className="h-4 w-4" /> Tasks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-end mb-3">
-              <Button size="sm" onClick={async () => {
-                try {
-                  await customFetch(`/api/matters/${id}/generate-tasks`, { method: "POST", body: JSON.stringify({ stage: m.stage }), headers: { "content-type": "application/json" } });
-                  queryClient.invalidateQueries({ queryKey: ["matter", id] });
-                  toast({ title: "Tasks generated", description: `Tasks for ${m.stage} created.` });
-                } catch (e) {
-                  toast({ title: "Error", description: "Failed to generate tasks", variant: "destructive" });
-                }
-              }}>Generate Tasks</Button>
+          <CardHeader className="pb-2 sm:pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Tasks
+              </CardTitle>
+              <GenerateTasksDialog 
+                matterId={id}
+                stage={m.stage}
+              />
             </div>
+          </CardHeader>
+          <CardContent className="text-xs sm:text-sm">
             {tasks.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No tasks</p>
             ) : (
@@ -352,16 +320,23 @@ export function MatterDetailPage({ id }: { id: string }) {
             )}
           </CardContent>
         </Card>
+
+        <WhatsAppMessaging
+          matterId={id}
+          debtorName={m.debtor ? `${m.debtor.firstName} ${m.debtor.lastName}` : "Debtor"}
+          debtorPhone={m.debtor?.whatsapp || m.debtor?.phone}
+          messages={m.whatsappMessages || []}
+        />
       </div>
 
       {history.length > 0 && (
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <History className="h-4 w-4" /> Stage History
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Stage History
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-xs sm:text-sm">
             <div className="space-y-3">
               {history.map((h: any) => (
                 <div key={h.id} className="flex items-center gap-3 text-sm">
