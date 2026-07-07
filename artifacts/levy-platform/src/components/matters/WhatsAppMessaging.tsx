@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,10 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatDate } from "@/lib/utils";
 import { MessageCircle, Send, AlertCircle, CheckCircle2, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { toastWhatsAppQueued } from "@/lib/automation-toasts";
 
 interface WhatsAppMessage {
   id: string;
@@ -31,6 +31,7 @@ interface WhatsAppMessage {
 
 interface WhatsAppMessagingProps {
   matterId: string;
+  debtorId?: string;
   debtorName: string;
   debtorPhone?: string;
   messages?: WhatsAppMessage[];
@@ -38,6 +39,7 @@ interface WhatsAppMessagingProps {
 
 export function WhatsAppMessaging({
   matterId,
+  debtorId,
   debtorName,
   debtorPhone,
   messages = [],
@@ -49,24 +51,9 @@ export function WhatsAppMessaging({
   const [isSending, setIsSending] = useState(false);
   const [customPhone, setCustomPhone] = useState(debtorPhone || "");
 
-  if (!debtorPhone && !customPhone) {
-    return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
-            WhatsApp
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-            <p className="text-sm text-amber-800">No WhatsApp number on file for this debtor</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  useEffect(() => {
+    setCustomPhone(debtorPhone || "");
+  }, [debtorPhone]);
 
   const handleSendMessage = async () => {
     if (!messageContent.trim()) {
@@ -78,6 +65,12 @@ export function WhatsAppMessaging({
       return;
     }
 
+    const phone = customPhone || debtorPhone;
+    if (!phone) {
+      toast({ title: "No phone", description: "Enter a recipient phone number", variant: "destructive" });
+      return;
+    }
+
     try {
       setIsSending(true);
 
@@ -86,7 +79,7 @@ export function WhatsAppMessaging({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: messageContent,
-          recipientPhone: customPhone || debtorPhone,
+          recipientPhone: phone,
         }),
       });
 
@@ -94,12 +87,9 @@ export function WhatsAppMessaging({
         throw new Error("Failed to send message");
       }
 
-      toast({
-        title: "Success",
-        description: "Message sent successfully",
-      });
-
+      toastWhatsAppQueued(toast, "WhatsApp message");
       setMessageContent("");
+      setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ["matter", matterId] });
     } catch (error) {
       toast({
@@ -170,6 +160,13 @@ export function WhatsAppMessaging({
               </DialogHeader>
 
               <div className="space-y-3 sm:space-y-4 max-h-[70vh] overflow-y-auto">
+                {!debtorPhone && (
+                  <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                    <p className="text-sm text-amber-800">No WhatsApp number on file — enter one below</p>
+                  </div>
+                )}
+
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">
                     Recipient Phone Number
@@ -203,7 +200,6 @@ export function WhatsAppMessaging({
                   </p>
                 </div>
 
-                {/* Quick Templates */}
                 <div className="space-y-1.5 sm:space-y-2">
                   <p className="text-xs font-medium text-muted-foreground">Quick Templates</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -240,7 +236,7 @@ export function WhatsAppMessaging({
                   Cancel
                 </Button>
                 <Button onClick={handleSendMessage} disabled={isSending} className="w-full sm:w-auto">
-                  {isSending ? "Sending..." : "Send Message"}
+                  {isSending ? "Queuing..." : "Send Message"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -259,10 +255,7 @@ export function WhatsAppMessaging({
                 className={cn("p-2 sm:p-3 rounded-lg border text-xs sm:text-sm", getStatusColor(msg.status))}
               >
                 <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
-                  <Badge
-                    variant="outline"
-                    className="text-xs"
-                  >
+                  <Badge variant="outline" className="text-xs">
                     {msg.direction === "OUTBOUND" ? "Sent" : "Received"}
                   </Badge>
                   <div className="flex items-center gap-1">

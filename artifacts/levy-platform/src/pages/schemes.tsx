@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useListSchemes } from "@workspace/api-client-react";
+import { useListSchemes, useUpdateScheme } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,19 +14,26 @@ export function SchemesPage() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const { data, isLoading } = useListSchemes({ page, limit, search: search || undefined });
+  const { data, isLoading } = useListSchemes();
 
   const raw = data as any;
   const schemes = Array.isArray(raw) ? raw : raw?.schemes ?? [];
   const total = raw?.total ?? (Array.isArray(raw) ? raw.length : 0);
   const totalPages = Math.ceil(total / limit);
 
+  const queryClient = useQueryClient();
+  const updateScheme = useUpdateScheme();
+
+  async function toggleActive(id: string, makeActive: boolean) {
+    updateScheme.mutate({ id, data: { isActive: makeActive } }, { onSuccess: () => queryClient.invalidateQueries() });
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Schemes</h1>
-          <p className="text-sm text-muted-foreground mt-1">{total} schemes registered</p>
+          <h1 className="text-2xl font-bold tracking-tight">Clients</h1>
+          <p className="text-sm text-muted-foreground mt-1">{total} clients registered</p>
         </div>
         <Link href="/schemes/new">
           <Button>
@@ -67,9 +75,9 @@ export function SchemesPage() {
                         <p className="text-xs text-muted-foreground">{scheme.agent?.name || "No agent"}</p>
                       </div>
                     </div>
-                    <Badge variant={scheme.isActive ? "default" : "secondary"}>
-                      {scheme.isActive ? "Active" : "Inactive"}
-                    </Badge>
+                      <Badge variant={scheme.isActive ? "default" : "secondary"}>
+                        {scheme.isActive ? "Active" : "Inactive"}
+                      </Badge>
                   </div>
                   {scheme.address && (
                     <div className="flex items-start gap-1.5 text-sm text-muted-foreground mb-3">
@@ -85,6 +93,13 @@ export function SchemesPage() {
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">Active Matters</p>
                       <p className="font-semibold text-sm">{scheme.matterCount ?? 0}</p>
+                      <div className="mt-2 flex justify-end gap-2">
+                        {scheme.isActive ? (
+                          <Button size="sm" variant="destructive" onClick={() => toggleActive(scheme.id, false)}>Archive</Button>
+                        ) : (
+                          <Button size="sm" onClick={() => toggleActive(scheme.id, true)}>Unarchive</Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

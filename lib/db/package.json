@@ -10,10 +10,12 @@
   "scripts": {
     "push": "drizzle-kit push --config ./drizzle.config.ts",
     "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
-    "seed": "tsx ./src/seed.ts"
+    "reset": "pnpm exec tsx ./src/reset.ts",
+    "seed": "pnpm exec tsx ./src/seed.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "dotenv": "^16.4.5",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "^0.8.3",
     "pg": "^8.20.0",

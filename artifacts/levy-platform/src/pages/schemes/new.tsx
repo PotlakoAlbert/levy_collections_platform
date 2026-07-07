@@ -18,7 +18,7 @@ export function CreateSchemePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    createScheme.mutate({ data: { name, agentId: agentId ?? null, address, levyAmount: levyAmount ? parseFloat(levyAmount) : null } }, {
+    createScheme.mutate({ data: { name, agentId: agentId || "", address, levyAmount: levyAmount ? parseFloat(levyAmount) : null } }, {
       onSuccess: () => setLocation("/schemes"),
       onError: () => alert("Failed to create scheme"),
     });
@@ -29,8 +29,8 @@ export function CreateSchemePage() {
       <div className="w-full max-w-lg">
         <Card>
           <CardHeader>
-            <CardTitle>Create Scheme</CardTitle>
-            <CardDescription>Register a body corporate / scheme</CardDescription>
+            <CardTitle>Create Client</CardTitle>
+            <CardDescription>Register a client (body corporate / scheme)</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,7 +59,7 @@ export function CreateSchemePage() {
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit" disabled={createScheme.isPending}>Create Scheme</Button>
+                <Button type="submit" disabled={createScheme.isPending}>Create Client</Button>
                 <Button variant="ghost" onClick={() => setLocation("/schemes")}>Cancel</Button>
               </div>
             </form>

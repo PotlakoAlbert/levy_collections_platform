@@ -1,5 +1,7 @@
+import React from "react";
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { setBaseUrl } from "@workspace/api-client-react";
@@ -7,8 +9,9 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { Layout } from "@/components/layout";
 import { ReactNode } from "react";
 
-// Configure API base URL
-setBaseUrl("http://localhost:8080");
+// Configure API base URL from environment variable or default
+const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+setBaseUrl(apiUrl);
 
 import NotFound from "@/pages/not-found";
 import { LoginPage } from "@/pages/login";
@@ -23,10 +26,12 @@ import { CreateDebtorPage } from "@/pages/debtors/new";
 import { CreateSchemePage } from "@/pages/schemes/new";
 import { CreateMatterPage } from "@/pages/matters/new";
 import { DiaryPage } from "@/pages/diary";
+import { AgentPortalPage } from "@/pages/agent-portal";
 import { DocumentsPage } from "@/pages/documents";
 import { ReportsPage } from "@/pages/reports";
 import { SettingsPage } from "@/pages/settings";
 import { PipelinePage } from "@/pages/pipeline";
+import { AutomationStatusPage } from "@/pages/automation-status";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -129,6 +134,15 @@ function Router() {
             <DiaryPage />
           </ProtectedRoute>
         </Route>
+        <Route path="/agent-portal">
+          <ProtectedRoute roles={["AGENT_VIEWER"]}>
+            <React.Suspense fallback={<div>Loading…</div>}>
+              {/* Agent Portal: read-only view for agents */}
+              {/* Lazy import to keep bundle small (simple page) */}
+              <AgentPortalPage />
+            </React.Suspense>
+          </ProtectedRoute>
+        </Route>
         <Route path="/documents">
           <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
             <DocumentsPage />
@@ -137,6 +151,11 @@ function Router() {
         <Route path="/reports">
           <ProtectedRoute roles={["ADMIN", "ATTORNEY", "COLLECTOR"]}>
             <ReportsPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/automation-status">
+          <ProtectedRoute roles={["ADMIN"]}>
+            <AutomationStatusPage />
           </ProtectedRoute>
         </Route>
         <Route path="/settings">
@@ -152,16 +171,18 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-        </AuthProvider>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system">
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}> 
+              <Router />
+            </WouterRouter>
+          </AuthProvider>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

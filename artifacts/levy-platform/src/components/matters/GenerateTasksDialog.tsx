@@ -243,7 +243,7 @@ export function GenerateTasksDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="text-base sm:text-lg">Generate Tasks for {stage} Stage</AlertDialogTitle>
           <AlertDialogDescription className="text-xs sm:text-sm">
-            This will create {templates.length} standard tasks based on BAM Attorneys' levy collection procedures.
+            This will create {templates.length} standard tasks based on  Attorneys' levy collection procedures.
           </AlertDialogDescription>
         </AlertDialogHeader>
 

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 export function ContactPage() {
   const [, setLocation] = useLocation();
   const [name, setName] = useState("");
@@ -18,7 +20,7 @@ export function ContactPage() {
     setIsSubmitting(true);
     setStatus(null);
     try {
-      const res = await fetch("http://localhost:8080/api/contact", {
+      const res = await fetch(`${API_URL}/api/contact`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, email, message }),

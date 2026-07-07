@@ -2,7 +2,7 @@ Build a full-stack Levy Collection Practice Management Platform (GhostPractice R
 🎯 PRIORITY ORDER (CRITICAL)
 Document Exporting (PDF generation) – Generate all legal documents (LOD, S129, Summons, Judgment, Writ, Rule 46, Joinder, Payment Arrangement) with automatic merge fields, interest-to-date calculation, and one-click download. Bulk document generation for multiple matters.
 
-Matter Management – Create matters with auto‑reference (BAM‑2026‑0001), link debtor + scheme + unit + managing agent, pipeline stages (LOD → S129 → Summons → Judgment → Writ → Rule46 → Sale → Closed), stage advancement with validation.
+Matter Management – Create matters with auto‑reference (‑2026‑0001), link debtor + scheme + unit + managing agent, pipeline stages (LOD → S129 → Summons → Judgment → Writ → Rule46 → Sale → Closed), stage advancement with validation.
 
 Debtor & Scheme Management – Full debtor profiles (name, ID, phone, WhatsApp, email, address), scheme register, managing agent registry.
 
@@ -93,7 +93,7 @@ model Debtor {
 
 model Matter {
   id              String      @id @default(cuid())
-  reference       String      @unique   // BAM-2026-0001
+  reference       String      @unique   // -2026-0001
   debtorId        String
   schemeId        String
   unit            String

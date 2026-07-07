@@ -6,11 +6,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number | null | undefined): string {
-  if (amount == null) return "R 0.00";
+  if (amount == null) return "R0.00";
   return new Intl.NumberFormat("en-ZA", {
     style: "currency",
     currency: "ZAR",
-  }).format(amount).replace("ZAR", "R");
+    minimumFractionDigits: 2,
+  }).format(amount);
 }
 
 export function formatDate(dateString: string | null | undefined): string {

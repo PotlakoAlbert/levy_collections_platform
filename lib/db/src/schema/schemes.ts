@@ -9,10 +9,11 @@ export const schemesTable = pgTable("schemes", {
   address: text("address"),
   levyAmount: numeric("levy_amount", { precision: 10, scale: 2 }),
   isActive: boolean("is_active").notNull().default(true),
+  archivedAt: timestamp("archived_at", { withTimezone: true }), // Phase 8: Archive timestamp for clients
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
-export const insertSchemeSchema = createInsertSchema(schemesTable).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertSchemeSchema = createInsertSchema(schemesTable).omit({ id: true, archivedAt: true, createdAt: true, updatedAt: true });
 export type InsertScheme = z.infer<typeof insertSchemeSchema>;
 export type Scheme = typeof schemesTable.$inferSelect;

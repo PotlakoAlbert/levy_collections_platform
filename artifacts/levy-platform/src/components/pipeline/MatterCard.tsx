@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { GripVertical, FileText, Clock, MoreVertical } from "lucide-react";
+import { GripVertical, FileText, Clock, MoreVertical, Zap, AlertCircle, CheckCircle2 } from "lucide-react";
 import { formatCurrency, PRIORITY_HEX_COLORS } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,10 @@ interface MatterCardProps {
   totalPaid: number;
   priority: string;
   unit?: string;
+  selected?: boolean;
+  onToggleSelect?: () => void;
+  automationStatus?: string;
+  nextAction?: string;
 }
 
 export function MatterCard({
@@ -37,6 +41,10 @@ export function MatterCard({
   totalPaid,
   priority,
   unit,
+  selected,
+  onToggleSelect,
+  automationStatus = "NO_TOUCH",
+  nextAction,
 }: MatterCardProps) {
   const {
     attributes,
@@ -69,6 +77,7 @@ export function MatterCard({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
+              <input type="checkbox" className="h-4 w-4" checked={!!selected} onChange={onToggleSelect} />
               <span
                 {...listeners}
                 className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
@@ -101,6 +110,20 @@ export function MatterCard({
               >
                 {priority}
               </Badge>
+              
+              {/* Automation Status Badge */}
+              {automationStatus === "NO_TOUCH" && (
+                <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-0 flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Auto
+                </Badge>
+              )}
+              {(automationStatus === "FLAGGED" || automationStatus === "MANUAL_REVIEW") && (
+                <Badge className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 border-0 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Review
+                </Badge>
+              )}
             </div>
             <p className="text-sm font-bold text-foreground">
               {formatCurrency(outstanding)}
@@ -108,6 +131,11 @@ export function MatterCard({
             <p className="text-xs text-muted-foreground mt-1">
               Outstanding
             </p>
+            {nextAction && (
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                Next: {nextAction}
+              </p>
+            )}
           </div>
           
           {/* Quick Actions */}

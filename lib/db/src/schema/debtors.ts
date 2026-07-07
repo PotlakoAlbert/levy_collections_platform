@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -13,6 +13,7 @@ export const debtorsTable = pgTable("debtors", {
   whatsapp: text("whatsapp"),
   physicalAddress: text("physical_address"),
   status: text("status").notNull().default("ACTIVE"), // ACTIVE, PAYING, DEFAULTING, ABSCONDED
+  isArchived: boolean("is_archived").notNull().default(false), // Phase 2: Soft delete field
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

@@ -19,8 +19,6 @@ export function MattersPage() {
   const limit = 20;
 
   const { data, isLoading } = useListMatters({
-    page,
-    limit,
     search: search || undefined,
     stage: stageFilter !== "ALL" ? stageFilter as any : undefined,
   });
@@ -79,6 +77,7 @@ export function MattersPage() {
                 <thead>
                   <tr className="border-b text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <th className="pb-3 pr-4 text-left">Reference</th>
+                    <th className="pb-3 pr-4 text-left">Client</th>
                     <th className="pb-3 pr-4 text-left">Debtor</th>
                     <th className="pb-3 pr-4 text-left">Scheme / Unit</th>
                     <th className="pb-3 pr-4 text-left">Stage</th>
@@ -92,6 +91,7 @@ export function MattersPage() {
                   {matters.map((matter: any) => (
                     <tr key={matter.id} className="hover:bg-muted/40 transition-colors">
                       <td className="py-3 pr-4 font-mono font-semibold text-primary">{matter.reference}</td>
+                      <td className="py-3 pr-4 font-medium text-sm">{matter.clientName ?? "-"}</td>
                       <td className="py-3 pr-4 font-medium">
                         {matter.debtorName || "-"}
                       </td>

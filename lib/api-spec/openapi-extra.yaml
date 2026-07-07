@@ -1,0 +1,1057 @@
+# Additional API endpoints not yet in openapi.yaml (merged at runtime for Swagger UI)
+tags:
+  - name: public
+    description: Public unauthenticated endpoints
+  - name: communications
+    description: Communications log
+  - name: creditors
+    description: Creditor management
+  - name: requisitions
+    description: Requisition management
+  - name: posting-codes
+    description: Posting code management
+  - name: transactions
+    description: Matter transactions
+  - name: admin
+    description: Admin dashboard and monitoring
+  - name: schema-admin
+    description: Schema administration (assignees, rules, bot states)
+  - name: whatsapp
+    description: WhatsApp integration
+  - name: automations
+    description: Automation testing and monitoring
+  - name: dev
+    description: Development and diagnostic endpoints
+
+paths:
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [public]
+      summary: Submit public contact form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                message: { type: string }
+              required: [email, message]
+      responses:
+        "201":
+          description: Contact request received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /communications:
+    get:
+      operationId: listCommunications
+      tags: [communications]
+      summary: List communications
+      parameters:
+        - name: matterId
+          in: query
+          schema: { type: string }
+        - name: debtorId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Communications list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Communication"
+    post:
+      operationId: createCommunication
+      tags: [communications]
+      summary: Log a communication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                matterId: { type: string }
+                debtorId: { type: string }
+                channel: { type: string }
+                direction: { type: string, enum: [inbound, outbound] }
+                content: { type: string }
+              required: [channel, direction, content]
+      responses:
+        "201":
+          description: Communication logged
+
+  /creditors:
+    get:
+      operationId: listCreditors
+      tags: [creditors]
+      summary: List creditors
+      responses:
+        "200":
+          description: Creditors list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+    post:
+      operationId: createCreditor
+      tags: [creditors]
+      summary: Create creditor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Creditor created
+
+  /requisitions:
+    get:
+      operationId: listRequisitions
+      tags: [requisitions]
+      summary: List requisitions
+      responses:
+        "200":
+          description: Requisitions list
+    post:
+      operationId: createRequisition
+      tags: [requisitions]
+      summary: Create requisition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Requisition created
+
+  /posting-codes:
+    get:
+      operationId: listPostingCodes
+      tags: [posting-codes]
+      summary: List posting codes
+      responses:
+        "200":
+          description: Posting codes list
+    post:
+      operationId: createPostingCode
+      tags: [posting-codes]
+      summary: Create posting code (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Posting code created
+
+  /matters/{id}/transactions:
+    get:
+      operationId: listMatterTransactions
+      tags: [transactions]
+      summary: List matter transactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Transactions list
+    post:
+      operationId: createMatterTransaction
+      tags: [transactions]
+      summary: Create matter transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Transaction created
+
+  /debtors/{id}/activity:
+    get:
+      operationId: getDebtorActivity
+      tags: [debtors]
+      summary: Get debtor activity log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Activity log
+
+  /debtors/{id}:
+    delete:
+      operationId: deleteDebtor
+      tags: [debtors]
+      summary: Delete debtor (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Debtor deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /users/{id}:
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete user (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: User deleted
+
+  /documents/{id}/send:
+    post:
+      operationId: sendDocument
+      tags: [documents]
+      summary: Send document to debtor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel: { type: string, enum: [email, whatsapp] }
+      responses:
+        "200":
+          description: Document sent
+
+  /tasks/{id}/archive:
+    patch:
+      operationId: archiveTask
+      tags: [tasks]
+      summary: Archive a task (removes from dashboard and diary)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Task archived
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}/unarchive:
+    patch:
+      operationId: unarchiveTask
+      tags: [tasks]
+      summary: Restore an archived task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Task restored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}/history:
+    get:
+      operationId: getTaskHistory
+      tags: [tasks]
+      summary: Get task history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Task history
+
+  /matters/{id}/ptp:
+    get:
+      operationId: getMatterPtp
+      tags: [matters]
+      summary: Get promise-to-pay arrangements
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: PTP arrangements
+    post:
+      operationId: createMatterPtp
+      tags: [matters]
+      summary: Create promise-to-pay arrangement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: PTP created
+
+  /matters/{id}/ptp/deactivate:
+    patch:
+      operationId: deactivateMatterPtp
+      tags: [matters]
+      summary: Deactivate promise-to-pay
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: PTP deactivated
+
+  /matters/{id}/generate-tasks:
+    post:
+      operationId: generateMatterTasks
+      tags: [matters]
+      summary: Generate tasks for matter stage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "201":
+          description: Tasks generated
+
+  /matters/{id}/assignees:
+    get:
+      operationId: listMatterAssignees
+      tags: [matters]
+      summary: List matter assignees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Assignees list
+    post:
+      operationId: assignMatterUser
+      tags: [matters]
+      summary: Assign user to matter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId: { type: string }
+                role: { type: string }
+      responses:
+        "201":
+          description: User assigned
+
+  /matters/{id}/assignees/{assigneeId}:
+    delete:
+      operationId: removeMatterAssignee
+      tags: [matters]
+      summary: Remove matter assignee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: assigneeId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Assignee removed
+
+  /matters/{id}/whatsapp/send:
+    post:
+      operationId: sendMatterWhatsApp
+      tags: [whatsapp, matters]
+      summary: Send WhatsApp message for matter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message: { type: string }
+                templateName: { type: string }
+      responses:
+        "200":
+          description: Message sent
+
+  /matters/{id}/whatsapp/messages:
+    get:
+      operationId: listMatterWhatsAppMessages
+      tags: [whatsapp, matters]
+      summary: List WhatsApp messages for matter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: WhatsApp messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WhatsappMessage"
+
+  /reports/automation/weekly:
+    get:
+      operationId: getWeeklyAutomationReport
+      tags: [reports]
+      summary: Weekly automation report
+      responses:
+        "200":
+          description: Weekly report
+
+  /reports/automation/monthly:
+    get:
+      operationId: getMonthlyAutomationReport
+      tags: [reports]
+      summary: Monthly automation report
+      responses:
+        "200":
+          description: Monthly report
+
+  /reports/automation/summary:
+    get:
+      operationId: getAutomationReportSummary
+      tags: [reports]
+      summary: Automation report summary
+      responses:
+        "200":
+          description: Summary
+
+  /reports/automation/generate:
+    post:
+      operationId: generateAutomationReport
+      tags: [reports]
+      summary: Generate automation report
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string, enum: [weekly, monthly] }
+      responses:
+        "200":
+          description: Report generated
+
+  /admin/health:
+    get:
+      operationId: adminHealth
+      tags: [admin]
+      summary: Admin system health
+      responses:
+        "200":
+          description: System health
+
+  /admin/queues:
+    get:
+      operationId: adminListQueues
+      tags: [admin]
+      summary: List job queues
+      responses:
+        "200":
+          description: Queue list
+
+  /admin/queues/{queueName}:
+    get:
+      operationId: adminQueueDetail
+      tags: [admin]
+      summary: Queue detail and jobs
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Queue detail
+
+  /admin/automation-metrics:
+    get:
+      operationId: adminAutomationMetrics
+      tags: [admin]
+      summary: Automation metrics
+      responses:
+        "200":
+          description: Metrics
+
+  /admin/config:
+    get:
+      operationId: adminConfig
+      tags: [admin]
+      summary: System configuration (non-secret)
+      responses:
+        "200":
+          description: Config
+
+  /matter-assignees/{matterId}:
+    get:
+      operationId: listMatterAssigneesSchema
+      tags: [schema-admin]
+      summary: List matter assignees (schema admin)
+      parameters:
+        - name: matterId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Assignees
+
+  /matter-assignees:
+    post:
+      operationId: createMatterAssignee
+      tags: [schema-admin]
+      summary: Create matter assignee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Assignee created
+
+  /matter-assignees/{id}/unassign:
+    patch:
+      operationId: unassignMatterAssignee
+      tags: [schema-admin]
+      summary: Unassign matter assignee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Unassigned
+
+  /auto-advance-rules:
+    get:
+      operationId: listAutoAdvanceRules
+      tags: [schema-admin]
+      summary: List auto-advance rules
+      responses:
+        "200":
+          description: Rules list
+    post:
+      operationId: createAutoAdvanceRule
+      tags: [schema-admin]
+      summary: Create auto-advance rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Rule created
+
+  /auto-advance-rules/{fromStage}/{toStage}:
+    get:
+      operationId: getAutoAdvanceRule
+      tags: [schema-admin]
+      summary: Get auto-advance rule by stages
+      parameters:
+        - name: fromStage
+          in: path
+          required: true
+          schema: { type: string }
+        - name: toStage
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Rule
+
+  /auto-advance-rules/{id}:
+    patch:
+      operationId: updateAutoAdvanceRule
+      tags: [schema-admin]
+      summary: Update auto-advance rule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Rule updated
+
+  /bot-states/{matterId}:
+    get:
+      operationId: getBotState
+      tags: [schema-admin]
+      summary: Get bot state for matter
+      parameters:
+        - name: matterId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Bot state
+    patch:
+      operationId: updateBotState
+      tags: [schema-admin]
+      summary: Update bot state
+      parameters:
+        - name: matterId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Bot state updated
+
+  /bot-states:
+    post:
+      operationId: createBotState
+      tags: [schema-admin]
+      summary: Create bot state
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "201":
+          description: Bot state created
+
+  /bot-states/{matterId}/escalate:
+    patch:
+      operationId: escalateBotState
+      tags: [schema-admin]
+      summary: Escalate bot state
+      parameters:
+        - name: matterId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Escalated
+
+  /automation-status:
+    get:
+      operationId: automationStatus
+      tags: [dev]
+      summary: Automation system status
+      responses:
+        "200":
+          description: Status
+
+  /test-job:
+    post:
+      operationId: testJob
+      tags: [dev]
+      summary: Enqueue test job
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Job enqueued
+
+  /test-interest-job/{matterId}:
+    post:
+      operationId: testInterestJob
+      tags: [dev]
+      summary: Enqueue interest calculation job
+      parameters:
+        - name: matterId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Job enqueued
+
+  /test-whatsapp-job:
+    post:
+      operationId: testWhatsAppJob
+      tags: [dev]
+      summary: Enqueue WhatsApp test job
+      responses:
+        "200":
+          description: Job enqueued
+
+  /queue-health:
+    get:
+      operationId: queueHealth
+      tags: [dev]
+      summary: Queue health check
+      responses:
+        "200":
+          description: Queue health
+
+  /test-ai:
+    post:
+      operationId: testAi
+      tags: [dev]
+      summary: Test AI service
+      responses:
+        "200":
+          description: AI response
+
+  /test-ai-classify:
+    post:
+      operationId: testAiClassify
+      tags: [dev]
+      summary: Test AI message classification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message: { type: string }
+      responses:
+        "200":
+          description: Classification result
+
+  /test-ai-draft:
+    post:
+      operationId: testAiDraft
+      tags: [dev]
+      summary: Test AI draft generation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Draft
+
+  /test-ai-advance:
+    post:
+      operationId: testAiAdvance
+      tags: [dev]
+      summary: Test AI stage advance decision
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Decision
+
+  /test-ai-payment:
+    post:
+      operationId: testAiPayment
+      tags: [dev]
+      summary: Test AI payment analysis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Analysis
+
+  /ai-info:
+    get:
+      operationId: aiInfo
+      tags: [dev]
+      summary: AI service configuration info
+      responses:
+        "200":
+          description: AI info
+
+  /whatsapp/webhook:
+    get:
+      operationId: whatsappWebhookVerify
+      tags: [whatsapp]
+      summary: WhatsApp webhook verification (Meta)
+      parameters:
+        - name: hub.mode
+          in: query
+          schema: { type: string }
+        - name: hub.verify_token
+          in: query
+          schema: { type: string }
+        - name: hub.challenge
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Challenge returned
+    post:
+      operationId: whatsappWebhookReceive
+      tags: [whatsapp]
+      summary: Receive WhatsApp webhook events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Event received
+
+  /test-whatsapp-send:
+    post:
+      operationId: testWhatsAppSend
+      tags: [whatsapp, dev]
+      summary: Send test WhatsApp message
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to: { type: string }
+                message: { type: string }
+      responses:
+        "200":
+          description: Message sent
+
+  /test-whatsapp-webhook:
+    post:
+      operationId: testWhatsAppWebhook
+      tags: [whatsapp, dev]
+      summary: Simulate WhatsApp webhook payload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Processed
+
+  /whatsapp-info:
+    get:
+      operationId: whatsappInfo
+      tags: [whatsapp]
+      summary: WhatsApp service status
+      responses:
+        "200":
+          description: Service info
+
+  /test-automations/trigger-debtor-created:
+    post:
+      operationId: triggerDebtorCreated
+      tags: [automations]
+      summary: Trigger debtor-created automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Triggered
+
+  /test-automations/trigger-debtor-status-changed:
+    post:
+      operationId: triggerDebtorStatusChanged
+      tags: [automations]
+      summary: Trigger debtor-status-changed automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Triggered
+
+  /test-automations/trigger-matter-created:
+    post:
+      operationId: triggerMatterCreated
+      tags: [automations]
+      summary: Trigger matter-created automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Triggered
+
+  /test-automations/trigger-payment-received:
+    post:
+      operationId: triggerPaymentReceived
+      tags: [automations]
+      summary: Trigger payment-received automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Triggered
+
+  /test-automations/trigger-stage-changed:
+    post:
+      operationId: triggerStageChanged
+      tags: [automations]
+      summary: Trigger stage-changed automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Triggered
+
+  /test-automations/queue-status:
+    get:
+      operationId: testAutomationsQueueStatus
+      tags: [automations]
+      summary: Automation queue status
+      responses:
+        "200":
+          description: Queue status
+
+  /test-automations/queue/{queueName}/jobs:
+    get:
+      operationId: testAutomationsQueueJobs
+      tags: [automations]
+      summary: List jobs in queue
+      parameters:
+        - name: queueName
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Jobs list
+
+  /test-automations/enqueue-job:
+    post:
+      operationId: testAutomationsEnqueueJob
+      tags: [automations]
+      summary: Enqueue arbitrary job
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Job enqueued
+
+  /test-automations/run-full-flow:
+    post:
+      operationId: testAutomationsRunFullFlow
+      tags: [automations]
+      summary: Run full automation test flow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Flow completed
+
+  /test-automations/system-status:
+    get:
+      operationId: testAutomationsSystemStatus
+      tags: [automations]
+      summary: Full automation system status
+      responses:
+        "200":
+          description: System status

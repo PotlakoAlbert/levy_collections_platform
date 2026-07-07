@@ -1,10 +1,18 @@
 import { Router, type IRouter } from "express";
-import { db, mattersTable, debtorsTable, schemesTable, managingAgentsTable, usersTable, stageHistoryTable, tasksTable, documentsTable, paymentsTable, promiseToPayTable, whatsappMessagesTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { db, mattersTable, debtorsTable, schemesTable, managingAgentsTable, usersTable, stageHistoryTable, tasksTable, documentsTable, paymentsTable, promiseToPayTable, whatsappMessagesTable, matterAssigneesTable } from "@workspace/db";
+import { eq, and, isNull } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
 import { generateMatterReference } from "../lib/reference";
 import { createAutoTasks } from "../lib/tasks-automation";
 import { calculateInterest } from "../lib/interest";
+import { emitEvent } from "../lib/hooks/event-hooks";
+import { enqueueJob } from "../lib/jobs/dispatcher";
+import {
+  getAutomationSettings,
+  updateAutomationSettings,
+  clearPendingBotDraft,
+} from "../lib/automation-settings.service";
+import { logJobQueued } from "../lib/activity-log.service";
 import {
   CreateMatterBody,
   UpdateMatterBody,
@@ -15,6 +23,7 @@ import {
   GetMatterHistoryParams,
   GetMatterFinancialsParams,
   ListMattersQueryParams,
+  
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -61,8 +70,8 @@ router.get("/matters", async (req, res): Promise<void> => {
   const total = filteredCandidates.length;
 
   // Pagination
-  const page = qp.success && qp.data.page ? Math.max(1, Number(qp.data.page)) : 1;
-  const limit = qp.success && qp.data.limit ? Math.max(1, Number(qp.data.limit)) : undefined;
+  const page = qp.success && (qp.data as any).page ? Math.max(1, Number((qp.data as any).page)) : 1;
+  const limit = qp.success && (qp.data as any).limit ? Math.max(1, Number((qp.data as any).limit)) : undefined;
   const offset = limit ? (page - 1) * limit : 0;
 
   const pageSlice = typeof limit === "number" ? filteredCandidates.slice(offset, offset + limit) : filteredCandidates;
@@ -73,6 +82,7 @@ router.get("/matters", async (req, res): Promise<void> => {
       const [debtor] = await db.select().from(debtorsTable).where(eq(debtorsTable.id, m.debtorId));
       const [scheme] = await db.select().from(schemesTable).where(eq(schemesTable.id, m.schemeId));
       const agent = scheme ? (await db.select().from(managingAgentsTable).where(eq(managingAgentsTable.id, scheme.agentId)))[0] : null;
+      const client = m.clientId ? (await db.select().from(managingAgentsTable).where(eq(managingAgentsTable.id, m.clientId)))[0] : null;
       const assignedUser = m.assignedToId ? (await db.select().from(usersTable).where(eq(usersTable.id, m.assignedToId)))[0] : null;
 
       // Filter by agentId if specified
@@ -97,6 +107,8 @@ router.get("/matters", async (req, res): Promise<void> => {
         reference: m.reference,
         debtorName: debtor ? `${debtor.firstName} ${debtor.lastName}` : "Unknown",
         schemeName: scheme?.name ?? "Unknown",
+        clientId: m.clientId ?? null,
+        clientName: client?.name ?? null,
         agentName: agent?.name ?? null,
         unit: m.unit,
         stage: m.stage,
@@ -158,6 +170,15 @@ router.post("/matters", async (req, res): Promise<void> => {
   const assigneeId = parsed.data.assignedToId ?? userId;
   await createAutoTasks(matter.id, "LOD", assigneeId);
 
+  // Emit MATTER_CREATED event to trigger automation
+  await emitEvent("MATTER_CREATED", {
+    matterId: matter.id,
+    reference: matter.reference,
+    debtorId: matter.debtorId,
+    stage: "LOD",
+    createdById: userId,
+  });
+
   res.status(201).json(formatMatter(matter));
 });
 
@@ -178,8 +199,12 @@ router.get("/matters/:id", async (req, res): Promise<void> => {
   const [scheme] = await db.select().from(schemesTable).where(eq(schemesTable.id, matter.schemeId));
   const agent = scheme ? (await db.select().from(managingAgentsTable).where(eq(managingAgentsTable.id, scheme.agentId)))[0] : null;
   const assignedUser = matter.assignedToId ? (await db.select().from(usersTable).where(eq(usersTable.id, matter.assignedToId)))[0] : null;
+  const client = matter.clientId ? (await db.select().from(managingAgentsTable).where(eq(managingAgentsTable.id, matter.clientId)))[0] : null;
 
-  const tasks = await db.select().from(tasksTable).where(eq(tasksTable.matterId, matter.id));
+  const tasks = await db
+    .select()
+    .from(tasksTable)
+    .where(and(eq(tasksTable.matterId, matter.id), isNull(tasksTable.archivedAt)));
   const documents = await db.select().from(documentsTable).where(eq(documentsTable.matterId, matter.id));
   const payments = await db.select().from(paymentsTable).where(eq(paymentsTable.matterId, matter.id));
   const history = await db.select().from(stageHistoryTable).where(eq(stageHistoryTable.matterId, matter.id));
@@ -306,6 +331,7 @@ router.get("/matters/:id", async (req, res): Promise<void> => {
     saleDate: matter.saleDate?.toISOString() ?? null,
     assignedToId: matter.assignedToId ?? null,
     assignedToName: assignedUser?.name ?? null,
+    client: client ? { id: client.id, name: client.name } : null,
     createdAt: matter.createdAt.toISOString(),
     updatedAt: matter.updatedAt.toISOString(),
     tasks: enrichedTasks,
@@ -476,6 +502,112 @@ router.post("/matters/:id/generate-tasks", async (req, res): Promise<void> => {
   res.status(201).json(enriched);
 });
 
+// -----------------------------
+// Matter assignees (many-to-many)
+// -----------------------------
+
+router.get("/matters/:id/assignees", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const rows = await db.select().from(matterAssigneesTable).where(eq(matterAssigneesTable.matterId, params.data.id));
+  const enriched = await Promise.all(
+    rows.map(async (r) => {
+      const [user] = await db.select().from(usersTable).where(eq(usersTable.id, r.userId));
+      return {
+        id: r.id,
+        matterId: r.matterId,
+        userId: r.userId,
+        role: r.role,
+        assignedAt: r.assignedAt.toISOString(),
+        assignedById: r.assignedById ?? null,
+        unassignedAt: r.unassignedAt?.toISOString() ?? null,
+        notes: r.notes ?? null,
+        userName: user?.name ?? null,
+        userEmail: user?.email ?? null,
+      };
+    })
+  );
+
+  res.json(enriched);
+});
+
+router.post("/matters/:id/assignees", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  // Parse body manually to avoid depending on generated types
+  const body = req.body ?? {};
+  const userIdToAssign = body.userId ? String(body.userId) : null;
+  if (!userIdToAssign) {
+    res.status(400).json({ error: "userId is required" });
+    return;
+  }
+
+  // Ensure user exists
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userIdToAssign));
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  // Prevent duplicate active assignment
+  const existing = await db.select().from(matterAssigneesTable).where(eq(matterAssigneesTable.matterId, params.data.id));
+  if (existing.some((e) => e.userId === userIdToAssign && !e.unassignedAt)) {
+    res.status(400).json({ error: "User already assigned to this matter" });
+    return;
+  }
+
+  const [assignee] = await db.insert(matterAssigneesTable).values({
+    matterId: params.data.id,
+    userId: userIdToAssign,
+    role: body.role ?? "COLLECTOR",
+    assignedById: req.user!.id,
+    assignedAt: new Date(),
+    notes: body.notes ?? null,
+  }).returning();
+
+  res.status(201).json({
+    id: assignee.id,
+    matterId: assignee.matterId,
+    userId: assignee.userId,
+    role: assignee.role,
+    assignedAt: assignee.assignedAt?.toISOString() ?? null,
+    assignedById: assignee.assignedById ?? null,
+    unassignedAt: assignee.unassignedAt?.toISOString() ?? null,
+    notes: assignee.notes ?? null,
+    userName: user.name,
+    userEmail: user.email,
+  });
+});
+
+router.delete("/matters/:id/assignees/:assigneeId", async (req, res): Promise<void> => {
+  const id = req.params.id;
+  const assigneeId = req.params.assigneeId;
+  if (!id || !assigneeId) {
+    res.status(400).json({ error: "id and assigneeId are required" });
+    return;
+  }
+
+  const [row] = await db.select().from(matterAssigneesTable).where(eq(matterAssigneesTable.id, assigneeId));
+  if (!row) {
+    res.status(404).json({ error: "Assignee not found" });
+    return;
+  }
+  if (row.unassignedAt) {
+    res.status(400).json({ error: "Assignee already unassigned" });
+    return;
+  }
+
+  const [updated] = await db.update(matterAssigneesTable).set({ unassignedAt: new Date() }).where(eq(matterAssigneesTable.id, row.id)).returning();
+  res.json({ id: updated.id, unassignedAt: updated.unassignedAt?.toISOString() ?? null });
+});
+
 router.patch("/matters/:id", async (req, res): Promise<void> => {
   const params = UpdateMatterParams.safeParse(req.params);
   if (!params.success) {
@@ -549,6 +681,21 @@ router.patch("/matters/:id/stage", async (req, res): Promise<void> => {
   if (parsed.data.stage === "WRIT") updates.writDate = stageDate;
   if (parsed.data.stage === "SALE") updates.saleDate = stageDate;
 
+  // If advancing to CLOSED, determine closed status (settled vs written off)
+  if (parsed.data.stage === "CLOSED") {
+    const capital = parseFloat(existing.capitalArrears as any) || 0;
+    const costs = parseFloat(existing.legalCosts as any) || 0;
+    const interest = parseFloat(existing.interest as any) || 0;
+    const paid = parseFloat(existing.totalPaid as any) || 0;
+    const outstanding = capital + costs + interest - paid;
+
+    if (outstanding <= 0) {
+      updates.status = "CLOSED_SETTLED";
+    } else {
+      updates.status = "CLOSED_WRITTEN_OFF";
+    }
+  }
+
   const [matter] = await db.update(mattersTable).set(updates).where(eq(mattersTable.id, params.data.id)).returning();
 
   // Record stage history
@@ -563,6 +710,15 @@ router.patch("/matters/:id/stage", async (req, res): Promise<void> => {
   // Create auto tasks for new stage
   const assigneeId = matter.assignedToId ?? userId;
   await createAutoTasks(matter.id, parsed.data.stage, assigneeId);
+
+  // Emit STAGE_CHANGED event to trigger automation
+  await emitEvent("STAGE_CHANGED", {
+    matterId: matter.id,
+    reference: matter.reference,
+    fromStage: existing.stage,
+    toStage: parsed.data.stage,
+    changedById: userId,
+  });
 
   res.json(formatMatter(matter));
 });
@@ -663,21 +819,27 @@ router.post("/matters/:id/whatsapp/send", async (req, res): Promise<void> => {
     createdById: req.user!.id,
   }).returning();
 
-  // TODO: Integrate with Meta WhatsApp Business API
-  // For now, we'll log it and mark as sent
-  // In production, this would call the WhatsApp API with the message
+  await enqueueJob("whatsapp", {
+    debtorPhone: String(recipientPhone),
+    message: String(content),
+    matterId: matter.id,
+    debtorId: matter.debtorId,
+    whatsappMessageId: message.id,
+  });
 
-  // Update status to SENT (simulated)
-  const [updatedMessage] = await db.update(whatsappMessagesTable).set({ status: "SENT" }).where(eq(whatsappMessagesTable.id, message.id)).returning();
+  const [debtor] = await db.select().from(debtorsTable).where(eq(debtorsTable.id, matter.debtorId));
+  if (debtor) {
+    await logJobQueued(matter.debtorId, matter.id, "WhatsApp message", "whatsapp");
+  }
 
   res.status(201).json({
-    id: updatedMessage.id,
-    matterId: updatedMessage.matterId,
-    debtorId: updatedMessage.debtorId,
-    direction: updatedMessage.direction,
-    content: updatedMessage.content,
-    status: updatedMessage.status,
-    createdAt: updatedMessage.createdAt.toISOString(),
+    id: message.id,
+    matterId: message.matterId,
+    debtorId: message.debtorId,
+    direction: message.direction,
+    content: message.content,
+    status: message.status,
+    createdAt: message.createdAt.toISOString(),
   });
 });
 
@@ -701,6 +863,115 @@ router.get("/matters/:id/whatsapp/messages", async (req, res): Promise<void> => 
   }));
 
   res.json(formatted);
+});
+
+// Automation settings for a matter (LOD automation, bot auto-reply)
+router.get("/matters/:id/automation", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [matter] = await db.select().from(mattersTable).where(eq(mattersTable.id, params.data.id));
+  if (!matter) {
+    res.status(404).json({ error: "Matter not found" });
+    return;
+  }
+
+  const settings = await getAutomationSettings(matter.id);
+  res.json({ matterId: matter.id, ...settings });
+});
+
+router.patch("/matters/:id/automation", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [matter] = await db.select().from(mattersTable).where(eq(mattersTable.id, params.data.id));
+  if (!matter) {
+    res.status(404).json({ error: "Matter not found" });
+    return;
+  }
+
+  const body = req.body ?? {};
+  const updates: { automationEnabled?: boolean; botAutoReplyEnabled?: boolean } = {};
+  if (typeof body.automationEnabled === "boolean") updates.automationEnabled = body.automationEnabled;
+  if (typeof body.botAutoReplyEnabled === "boolean") updates.botAutoReplyEnabled = body.botAutoReplyEnabled;
+
+  const settings = await updateAutomationSettings(matter.id, matter.debtorId, updates);
+  res.json({ matterId: matter.id, ...settings });
+});
+
+// Approve a pending bot draft and send via WhatsApp queue
+router.post("/matters/:id/bot-draft/approve", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [matter] = await db.select().from(mattersTable).where(eq(mattersTable.id, params.data.id));
+  if (!matter) {
+    res.status(404).json({ error: "Matter not found" });
+    return;
+  }
+
+  const settings = await getAutomationSettings(matter.id);
+  if (!settings.pendingDraft) {
+    res.status(404).json({ error: "No pending bot draft" });
+    return;
+  }
+
+  const draft = settings.pendingDraft;
+  const messageText = String(req.body?.message ?? draft.messageText);
+
+  const [debtor] = await db.select().from(debtorsTable).where(eq(debtorsTable.id, matter.debtorId));
+  const debtorName = debtor ? `${debtor.firstName} ${debtor.lastName}` : "debtor";
+
+  const [waRow] = await db.insert(whatsappMessagesTable).values({
+    matterId: matter.id,
+    debtorId: matter.debtorId,
+    direction: "OUTBOUND",
+    messageType: "text",
+    content: messageText,
+    status: "QUEUED",
+    createdById: req.user!.id,
+  }).returning();
+
+  await logJobQueued(matter.debtorId, matter.id, "Approved bot reply", "whatsapp");
+  await enqueueJob("whatsapp", {
+    debtorPhone: draft.debtorPhone,
+    message: messageText,
+    matterId: matter.id,
+    debtorId: matter.debtorId,
+    debtorName,
+    whatsappMessageId: waRow?.id,
+    activityContext: "BOT_REPLY",
+  });
+
+  await clearPendingBotDraft(matter.id, matter.debtorId);
+
+  res.json({ success: true, messageId: waRow?.id });
+});
+
+router.post("/matters/:id/bot-draft/reject", async (req, res): Promise<void> => {
+  const params = GetMatterParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [matter] = await db.select().from(mattersTable).where(eq(mattersTable.id, params.data.id));
+  if (!matter) {
+    res.status(404).json({ error: "Matter not found" });
+    return;
+  }
+
+  await clearPendingBotDraft(matter.id, matter.debtorId);
+  res.json({ success: true });
 });
 
 export default router;

@@ -1,14 +1,24 @@
-import { pool } from "./index.js";
-import {
+import * as dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Load .env from the lib/db directory
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, "../.env");
+dotenv.config({ path: envPath });
+
+// NOW import the rest after dotenv is loaded
+const { pool } = await import("./index.js");
+const {
   usersTable,
   managingAgentsTable,
   schemesTable,
   debtorsTable,
   interestRatesTable,
-} from "./schema/index.js";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import bcrypt from "bcryptjs";
+} = await import("./schema/index.js");
+const { eq } = await import("drizzle-orm");
+const { drizzle } = await import("drizzle-orm/node-postgres");
+const bcrypt = await import("bcryptjs");
 
 const db = drizzle(pool);
 
@@ -17,13 +27,13 @@ async function seed() {
     console.log("🌱 Starting database seed...");
 
     // Hash the default password
-    const hashedPassword = await bcrypt.hash("Admin123!", 10);
+    const hashedPassword = await bcrypt.default.hash("admin@law.co.za", 10);
 
     // Check if admin user exists
     const existingAdmin = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.email, "admin@bamlaw.co.za"))
+      .where(eq(usersTable.email, "admin@law.co.za"))
       .limit(1);
 
     if (existingAdmin.length === 0) {
@@ -31,7 +41,7 @@ async function seed() {
       await db.insert(usersTable).values([
         {
           id: "550e8400-e29b-41d4-a716-446655440000",
-          email: "admin@bamlaw.co.za",
+          email: "admin@law.co.za",
           name: "Admin User",
           passwordHash: hashedPassword,
           role: "ADMIN",
@@ -39,7 +49,7 @@ async function seed() {
         },
         {
           id: "550e8400-e29b-41d4-a716-446655440001",
-          email: "attorney@bamlaw.co.za",
+          email: "attorney@law.co.za",
           name: "Attorney User",
           passwordHash: hashedPassword,
           role: "ATTORNEY",
@@ -47,7 +57,7 @@ async function seed() {
         },
         {
           id: "550e8400-e29b-41d4-a716-446655440002",
-          email: "collector@bamlaw.co.za",
+          email: "collector@law.co.za",
           name: "Collector User",
           passwordHash: hashedPassword,
           role: "COLLECTOR",
@@ -85,8 +95,8 @@ async function seed() {
       // Create sample managing agent
       await db.insert(managingAgentsTable).values({
         id: "550e8400-e29b-41d4-a716-446655440100",
-        name: "BAM Law Attorneys",
-        contactEmail: "info@bamlaw.co.za",
+        name: " Law Attorneys",
+        contactEmail: "info@law.co.za",
         contactPhone: "+27 11 123 4567",
         isActive: true,
       });

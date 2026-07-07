@@ -1,6 +1,8 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
 import { rm } from "node:fs/promises";
@@ -10,7 +12,22 @@ globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 
+function compileOpenApiSpec() {
+  const bundle = path.resolve(artifactDir, "../../lib/api-spec/openapi.bundle.json");
+  const script = path.resolve(artifactDir, "../../lib/api-spec/compile-openapi.py");
+  const result = spawnSync("python", [script], { stdio: "inherit" });
+  if (result.status !== 0) {
+    if (existsSync(bundle)) {
+      console.warn("OpenAPI compile failed — using existing openapi.bundle.json");
+      return;
+    }
+    throw new Error("Failed to compile OpenAPI spec (compile-openapi.py)");
+  }
+}
+
 async function buildAll() {
+  compileOpenApiSpec();
+
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 

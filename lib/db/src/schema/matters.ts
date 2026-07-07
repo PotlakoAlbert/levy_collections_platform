@@ -1,16 +1,17 @@
-import { pgTable, text, boolean, timestamp, numeric, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const mattersTable = pgTable("matters", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   reference: text("reference").notNull().unique(),
+  clientId: text("client_id"), // Phase 8: Client/Scheme reference for organization - OPTIONAL
   debtorId: text("debtor_id").notNull(),
   schemeId: text("scheme_id").notNull(),
   unit: text("unit").notNull(),
   stage: text("stage").notNull().default("LOD"), // LOD, S129, SUMMONS, JUDGMENT, WRIT, RULE46, SALE, CLOSED
   priority: text("priority").notNull().default("MEDIUM"), // LOW, MEDIUM, HIGH, CRITICAL
-  status: text("status").notNull().default("ACTIVE"), // ACTIVE, ON_HOLD, SETTLED, PAID_IN_FULL, WRITTEN_OFF
+  status: text("status").notNull().default("ACTIVE"), // ACTIVE, ON_HOLD, SETTLED, PAID_IN_FULL, WRITTEN_OFF, CLOSED_SETTLED, CLOSED_WRITTEN_OFF (Phase 8)
   capitalArrears: numeric("capital_arrears", { precision: 12, scale: 2 }).notNull().default("0"),
   interest: numeric("interest", { precision: 12, scale: 2 }).notNull().default("0"),
   legalCosts: numeric("legal_costs", { precision: 12, scale: 2 }).notNull().default("0"),
@@ -24,6 +25,7 @@ export const mattersTable = pgTable("matters", {
   saleDate: timestamp("sale_date", { withTimezone: true }),
   assignedToId: text("assigned_to_id"),
   createdById: text("created_by_id").notNull(),
+  isArchived: boolean("is_archived").notNull().default(false), // Phase 2: Soft delete field
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
@@ -37,3 +39,5 @@ export const matterCountersTable = pgTable("matter_counters", {
   year: integer("year").notNull(),
   count: integer("count").notNull().default(0),
 });
+
+import { integer } from "drizzle-orm/pg-core";

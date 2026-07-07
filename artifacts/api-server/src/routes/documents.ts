@@ -1,7 +1,10 @@
 import { Router, type IRouter } from "express";
-import { db, documentsTable, mattersTable, debtorsTable, schemesTable, managingAgentsTable, interestRatesTable, communicationsTable } from "@workspace/db";
+import { db, documentsTable, mattersTable, debtorsTable, schemesTable, managingAgentsTable, interestRatesTable, communicationsTable, whatsappMessagesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
+import { emitToDebtor } from "../lib/ws";
+import { enqueueJob } from "../lib/jobs/dispatcher";
+import { logLodSending, logJobQueued } from "../lib/activity-log.service";
 import { ListDocumentsQueryParams, GenerateDocumentBody, BulkGenerateDocumentsBody, DownloadDocumentParams } from "@workspace/api-zod";
 import { calculateInterest } from "../lib/interest";
 
@@ -297,7 +300,7 @@ router.post("/documents/:id/send", async (req, res): Promise<void> => {
   const createdBy = req.user!.id;
   const now = new Date();
 
-  // For each requested channel, create a communications record (simulated send)
+  // For each requested channel, dispatch or record
   for (const ch of channels) {
     let toVal = String(body.to ?? "");
     if (!toVal && debtor) {
@@ -305,11 +308,41 @@ router.post("/documents/:id/send", async (req, res): Promise<void> => {
       if (ch === "WHATSAPP") toVal = debtor.whatsapp ?? debtor.phone ?? "";
     }
 
-    if (!toVal) continue; // skip if no recipient
+    if (!toVal) continue;
 
     const message = String(body.message ?? `Please see attached document: ${doc.fileUrl}`);
 
-    await db.insert(communicationsTable).values({
+    if (ch === "WHATSAPP" && matter && debtor) {
+      const debtorName = `${debtor.firstName} ${debtor.lastName}`.trim();
+      const fullMessage = `${message}\n\n${doc.fileUrl}`;
+
+      await logLodSending(debtor.id, doc.matterId, matter.reference, "WhatsApp");
+      await logJobQueued(debtor.id, doc.matterId, "LOD via WhatsApp", "whatsapp");
+
+      const [waRow] = await db.insert(whatsappMessagesTable).values({
+        matterId: doc.matterId,
+        debtorId: debtor.id,
+        direction: "OUTBOUND",
+        messageType: "text",
+        content: fullMessage,
+        status: "QUEUED",
+        createdById: createdBy,
+      }).returning();
+
+      await enqueueJob("whatsapp", {
+        debtorPhone: toVal,
+        message: fullMessage,
+        matterId: doc.matterId,
+        debtorId: debtor.id,
+        debtorName,
+        whatsappMessageId: waRow?.id,
+        activityContext: "LOD_NOTIFICATION",
+      });
+
+      continue;
+    }
+
+    const [commRow] = await db.insert(communicationsTable).values({
       matterId: doc.matterId,
       to: toVal,
       channel: ch,
@@ -319,6 +352,19 @@ router.post("/documents/:id/send", async (req, res): Promise<void> => {
       status: "SENT",
       createdById: createdBy,
     }).returning();
+
+    // Notify any connected SSE clients for the debtor (if available)
+    try {
+      const [matterRow] = await db.select().from(mattersTable).where(eq(mattersTable.id, doc.matterId));
+      if (matterRow) {
+        const [debtorRow] = await db.select().from(debtorsTable).where(eq(debtorsTable.id, matterRow.debtorId));
+        if (debtorRow) {
+          emitToDebtor(debtorRow.id, "document_sent", { communication: commRow, document: { id: doc.id, fileUrl: doc.fileUrl, sentVia: channels.join(",") } });
+        }
+      }
+    } catch (err) {
+      // ignore SSE failures
+    }
   }
 
   // Mark document as sent via these channels

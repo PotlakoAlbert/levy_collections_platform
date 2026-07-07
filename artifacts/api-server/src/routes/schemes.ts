@@ -33,8 +33,8 @@ router.get("/schemes", async (req, res): Promise<void> => {
 
   const total = schemes.length;
 
-  const page = queryParams.success && queryParams.data.page ? Math.max(1, Number(queryParams.data.page)) : 1;
-  const limit = queryParams.success && queryParams.data.limit ? Math.max(1, Number(queryParams.data.limit)) : undefined;
+  const page = queryParams.success && (queryParams.data as any).page ? Math.max(1, Number((queryParams.data as any).page)) : 1;
+  const limit = queryParams.success && (queryParams.data as any).limit ? Math.max(1, Number((queryParams.data as any).limit)) : undefined;
   const offset = limit ? (page - 1) * limit : 0;
 
   const pageSlice = typeof limit === "number" ? schemes.slice(offset, offset + limit) : schemes;
@@ -95,6 +95,8 @@ router.patch("/schemes/:id", async (req, res): Promise<void> => {
   if ("address" in parsed.data) updates.address = parsed.data.address;
   if ("levyAmount" in parsed.data) updates.levyAmount = parsed.data.levyAmount != null ? String(parsed.data.levyAmount) : null;
   if (parsed.data.isActive != null) updates.isActive = parsed.data.isActive;
+  if (parsed.data.isActive === false) updates.archivedAt = new Date();
+  if (parsed.data.isActive === true) updates.archivedAt = null;
 
   const [scheme] = await db.update(schemesTable).set(updates).where(eq(schemesTable.id, params.data.id)).returning();
   if (!scheme) {

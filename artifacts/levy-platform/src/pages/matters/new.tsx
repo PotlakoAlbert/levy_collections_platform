@@ -8,8 +8,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 
 export function CreateMatterPage() {
   const [, setLocation] = useLocation();
-  const { data: debtorsRaw } = useListDebtors({ page: 1, limit: 200 });
-  const { data: schemesRaw } = useListSchemes({ page: 1, limit: 200 });
+  const { data: debtorsRaw } = useListDebtors();
+  const { data: schemesRaw } = useListSchemes();
   const { data: usersRaw } = useListUsers();
 
   const [debtorId, setDebtorId] = useState<string | undefined>(undefined);
@@ -41,11 +41,11 @@ export function CreateMatterPage() {
     createMatter.mutate({ data: {
       debtorId,
       schemeId,
-      unit: unit || null,
+      unit: unit || "",
       priority: priority as any,
       capitalArrears: capitalArrears ? parseFloat(capitalArrears) : 0,
       legalCosts: legalCosts ? parseFloat(legalCosts) : 0,
-      assignedToId: assignedToId ?? null,
+      assignedToId: assignedToId ?? undefined,
     } }, {
       onSuccess: (m: any) => setLocation(`/matters/${m.id}`),
       onError: () => alert("Failed to create matter"),

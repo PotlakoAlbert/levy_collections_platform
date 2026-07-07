@@ -71,10 +71,12 @@ function DownloadButton({ matterId, matterRef }: { matterId: string; matterRef: 
 }
 
 export function DocumentsPage() {
-  const { data, isLoading } = useListMatters({ page: 1, limit: 50, status: "ACTIVE" as any });
-  const { data: debtorsRaw } = useListDebtors({ page: 1, limit: 200 });
+  const [stageFilter, setStageFilter] = useState("ALL");
+  const STAGES = ["ALL", "LOD", "S129", "SUMMONS", "JUDGMENT", "WRIT", "RULE46", "SALE", "CLOSED"];
+  const { data, isLoading } = useListMatters({ status: "ACTIVE" as any, stage: stageFilter !== "ALL" ? (stageFilter as any) : undefined });
+  const { data: debtorsRaw } = useListDebtors();
   const [selectedDebtor, setSelectedDebtor] = useState<string | null>(null);
-  const { data: debtorMatters } = useGetDebtorMatters(selectedDebtor || "", { query: { enabled: !!selectedDebtor } });
+  const { data: debtorMatters } = useGetDebtorMatters(selectedDebtor || "", { query: { queryKey: ["debtorMatters", selectedDebtor], enabled: !!selectedDebtor } });
   const [selectedDocType, setSelectedDocType] = useState("LOD");
   const generateDocByDebtor = useGenerateDocument();
   const bulkGenerate = useBulkGenerateDocuments();
@@ -106,6 +108,17 @@ export function DocumentsPage() {
               <option value="">-- choose debtor --</option>
               {(Array.isArray(debtorsRaw) ? debtorsRaw : (debtorsRaw as any)?.debtors ?? []).map((d: any) => <option key={d.id} value={d.id}>{d.fullName} ({d.idNumber ?? d.companyName ?? ''})</option>)}
             </select>
+          </div>
+          <div className="w-48">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stage filter</label>
+            <Select value={stageFilter} onValueChange={(v) => setStageFilter(v)}>
+              <SelectTrigger className="w-full h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STAGES.map(s => <SelectItem key={s} value={s} className="text-xs">{s === "ALL" ? "All Stages" : s}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-end gap-2">
             <Select value={selectedDocType} onValueChange={setSelectedDocType}>
@@ -155,22 +168,25 @@ export function DocumentsPage() {
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction onClick={() => {
                     const docType = selectedDocType;
-                    if (!selectedDialogMatterId) return toast({ title: "Select matter", description: "Please choose a matter first", variant: "destructive" });
-                    generateDocByDebtor.mutate({ data: { matterId: selectedDialogMatterId, docType } } as any, {
-                      onSuccess: (data: any) => {
-                        const link = document.createElement("a");
-                        link.href = data.fileUrl;
-                        link.download = `${data.matterReference ?? selectedDialogMatterId}_${docType}.html`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        toast({ title: "Document generated", description: `${docType} is ready.` });
-                        setSelectedDialogMatterId(null);
-                      },
-                      onError: () => {
-                        toast({ title: "Error", description: "Failed to generate document", variant: "destructive" });
-                      }
-                    });
+                    if (!selectedDialogMatterId) {
+                      toast({ title: "Select matter", description: "Please choose a matter first", variant: "destructive" });
+                    } else {
+                      generateDocByDebtor.mutate({ data: { matterId: selectedDialogMatterId, docType } } as any, {
+                        onSuccess: (data: any) => {
+                          const link = document.createElement("a");
+                          link.href = data.fileUrl;
+                          link.download = `${data.matterReference ?? selectedDialogMatterId}_${docType}.html`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          toast({ title: "Document generated", description: `${docType} is ready.` });
+                          setSelectedDialogMatterId(null);
+                        },
+                        onError: () => {
+                          toast({ title: "Error", description: "Failed to generate document", variant: "destructive" });
+                        }
+                      });
+                    }
                   }}>Generate</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -228,6 +244,11 @@ export function DocumentsPage() {
                       }
                     });
                   }}>Bulk generate</Button>
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    if (stageFilter === "ALL") return;
+                    const ids = matters.filter((m: any) => m.stage === stageFilter).map((m: any) => m.id);
+                    setSelectedMatterIds(ids);
+                  }} title="Select all matters in selected stage">Select stage</Button>
                 </div>
               </div>
 

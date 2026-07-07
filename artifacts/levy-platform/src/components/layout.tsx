@@ -12,26 +12,32 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Columns3
+  Columns3,
+  Sun,
+  Moon,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/pipeline", label: "Pipeline", icon: Columns3, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/matters", label: "Matters", icon: Briefcase, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/debtors", label: "Debtors", icon: Users, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
-  { href: "/schemes", label: "Schemes", icon: Building2, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
+  { href: "/schemes", label: "Clients", icon: Building2, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/diary", label: "Diary", icon: CalendarCheck, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/documents", label: "Documents", icon: FileText, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
   { href: "/reports", label: "Reports", icon: BarChart3, roles: ["ADMIN", "ATTORNEY", "COLLECTOR"] },
+  { href: "/automation-status", label: "Automation", icon: Zap, roles: ["ADMIN"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["ADMIN"] },
   { href: "/agent-portal", label: "Agent Portal", icon: Building2, roles: ["AGENT_VIEWER"] },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { theme, setTheme } = useTheme();
 
   if (!user) return <>{children}</>;
 
@@ -40,9 +46,16 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       <aside className="w-64 flex flex-col bg-sidebar border-r border-sidebar-border text-sidebar-foreground">
-        <div className="p-6">
-          <h1 className="text-xl font-bold tracking-tight text-white">Levy<span className="text-primary-foreground/70">Connect</span></h1>
-          <p className="text-xs text-sidebar-foreground/60 mt-1 uppercase tracking-wider font-semibold">Practice Management</p>
+        <div className="p-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-white">Levy<span className="text-primary-foreground/70">Connect</span></h1>
+            <p className="text-xs text-sidebar-foreground/60 mt-1 uppercase tracking-wider font-semibold">Practice Management</p>
+          </div>
+          <div>
+            <Button variant="ghost" size="sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle theme">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
@@ -81,7 +94,10 @@ export function Layout({ children }: { children: ReactNode }) {
           <Button 
             variant="ghost" 
             className="w-full justify-start text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-            onClick={logout}
+            onClick={() => {
+              logout();
+              setLocation("/login");
+            }}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Logout

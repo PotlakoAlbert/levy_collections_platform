@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/utils";
-import { AlertCircle, Calendar, DollarSign } from "lucide-react";
+import { AlertCircle, Calendar, Currency } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface PromiseToPayDialogProps {
@@ -170,10 +170,10 @@ export function PromiseToPayDialog({
 
           <div className="space-y-1.5 sm:space-y-2">
             <Label htmlFor="firstPaymentAmount" className="text-xs sm:text-sm font-medium">
-              First Payment Amount (R) *
+              First Payment Amount (ZAR) *
             </Label>
             <div className="flex gap-1.5 sm:gap-2">
-              <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-2 shrink-0" />
+              <Currency className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-2 shrink-0" />
               <Input
                 id="firstPaymentAmount"
                 type="number"
@@ -204,7 +204,7 @@ export function PromiseToPayDialog({
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="installmentAmount" className="text-xs sm:text-sm font-medium">
-                Installment Amount (R) *
+                Installment Amount (ZAR) *
               </Label>
               <Input
                 id="installmentAmount"

@@ -15,3 +15,11 @@ export * from "./creditors";
 export * from "./payment_requisitions";
 export * from "./communications";
 export * from "./whatsapp_messages";
+export * from "./matter-assignees";
+export * from "./auto-advance-rules";
+export * from "./bot-states";
+export * from "./event-logs";
+export * from "./webhook-events";
+export * from "./scheduled-actions";
+export * from "./ai-decisions";
+export * from "./enhancements"; // Phase 8: Frontend enhancements

@@ -3,6 +3,10 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
+// Note: When running with `dotenv vite`, the .env files are loaded by dotenv-cli
+// and passed as environment variables to this config. Vite will also load them
+// internally for the client-side code.
+
 const rawPort = process.env.PORT;
 
 if (!rawPort) {

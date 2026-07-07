@@ -1,8 +1,8 @@
-import { useGetMatter, useUpdateMatterStage } from "@workspace/api-client-react";
+import { useGetMatter, useUpdateMatterStage, useListUsers } from "@workspace/api-client-react";
 import { customFetch } from "@workspace/api-client-react/src/custom-fetch";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel, AlertDialogFooter } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { formatCurrency, formatDate, STAGE_COLORS, PRIORITY_COLORS } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,8 @@ import { format } from "date-fns";
 import { PromiseToPayDialog } from "@/components/matters/PromiseToPayDialog";
 import { GenerateTasksDialog } from "@/components/matters/GenerateTasksDialog";
 import { WhatsAppMessaging } from "@/components/matters/WhatsAppMessaging";
+import { AutomationPanel } from "@/components/matters/AutomationPanel";
+import CommunicationsLog from "@/components/matters/CommunicationsLog";
 
 const STAGE_ORDER = ["LOD", "S129", "SUMMONS", "JUDGMENT", "WRIT", "RULE46", "SALE", "CLOSED"];
 
@@ -34,14 +36,37 @@ export function MatterDetailPage({ id }: { id: string }) {
   const advanceStage = useUpdateMatterStage();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { data: usersRaw } = useListUsers();
 
   // Local UI state (always declared to preserve hook order)
   const [ptpSubmitting, setPtpSubmitting] = useState(false);
+  const [assignees, setAssignees] = useState<any[]>([]);
+  const [assigneesLoading, setAssigneesLoading] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [selectedUserToAdd, setSelectedUserToAdd] = useState<string | null>(null);
+  const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<string>("COLLECTOR");
   const [firstPaymentDate, setFirstPaymentDate] = useState("");
   const [firstPaymentAmount, setFirstPaymentAmount] = useState("");
   const [installmentDay, setInstallmentDay] = useState("1");
   const [installmentAmount, setInstallmentAmount] = useState("");
   const [promiseDate, setPromiseDate] = useState("");
+
+  // Load assignees for this matter - must be before early returns
+  useEffect(() => {
+    let mounted = true;
+    setAssigneesLoading(true);
+    (async () => {
+      try {
+        const data = await customFetch<any[]>(`/api/matters/${id}/assignees`, { method: "GET" });
+        if (mounted) setAssignees(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (mounted) setAssignees([]);
+      } finally {
+        if (mounted) setAssigneesLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [id]);
 
   if (isLoading) {
     return <div className="flex justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
@@ -176,6 +201,20 @@ export function MatterDetailPage({ id }: { id: string }) {
 
         <Card>
           <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground">Client</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+            {m.client ? (
+              <>
+                <p className="font-semibold text-base">{m.client.name}</p>
+                <p className="text-sm text-muted-foreground">ID: <span className="font-medium text-foreground">{m.client.id}</span></p>
+              </>
+            ) : <p className="text-muted-foreground text-sm">No client linked</p>}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2 sm:pb-3">
             <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground">Timeline</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-xs sm:text-sm">
@@ -283,6 +322,93 @@ export function MatterDetailPage({ id }: { id: string }) {
         </Card>
 
         <Card>
+          <CardHeader className="pb-2 sm:pb-3 flex items-center justify-between">
+            <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground">Assigned Users</CardTitle>
+            <div>
+              <AlertDialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm">Add Assignee</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Add Assignee</AlertDialogTitle>
+                    <AlertDialogDescription>Select a user and role to assign to this matter.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground">User</label>
+                      <select className="w-full rounded-md border px-3 py-2 mt-1" value={selectedUserToAdd ?? ""} onChange={(e) => setSelectedUserToAdd(e.target.value || null)}>
+                        <option value="">-- choose user --</option>
+                        {(Array.isArray(usersRaw) ? usersRaw : (usersRaw as any)?.data || []).map((u: any) => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground">Role</label>
+                      <select className="w-full rounded-md border px-3 py-2 mt-1" value={selectedRoleToAdd} onChange={(e) => setSelectedRoleToAdd(e.target.value)}>
+                        <option value="COLLECTOR">Collector</option>
+                        <option value="NEGOTIATOR">Negotiator</option>
+                        <option value="ADVISOR">Advisor</option>
+                        <option value="SUPERVISOR">Supervisor</option>
+                      </select>
+                    </div>
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                      (async () => {
+                        if (!selectedUserToAdd) { toast({ title: "Select user", variant: "destructive" }); return; }
+                        try {
+                          const json = await customFetch<any>(`/api/matters/${id}/assignees`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ userId: selectedUserToAdd, role: selectedRoleToAdd }),
+                          });
+                          setAssignees((s) => [json, ...s]);
+                          toast({ title: "Assigned", description: "User assigned to matter" });
+                          setAddDialogOpen(false);
+                          setSelectedUserToAdd(null);
+                        } catch (e) {
+                          toast({ title: "Error", description: "Failed to assign user", variant: "destructive" });
+                        }
+                      })();
+                    }}>Add</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </CardHeader>
+          <CardContent className="text-xs sm:text-sm">
+            {assigneesLoading ? (
+              <div className="flex justify-center py-6"><div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" /></div>
+            ) : assignees.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No assignees</p>
+            ) : (
+              <div className="divide-y">
+                {assignees.map((a: any) => (
+                  <div key={a.id} className="py-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">{a.userName ?? a.userEmail ?? a.userId}</p>
+                      <p className="text-xs text-muted-foreground">{a.role} · Assigned {formatDate(a.assignedAt)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="destructive" onClick={async () => {
+                        try {
+                          await customFetch<void>(`/api/matters/${id}/assignees/${a.id}`, { method: "DELETE" });
+                          setAssignees((s) => s.filter((x) => x.id !== a.id));
+                          toast({ title: "Unassigned", description: "User removed from matter" });
+                        } catch (e) {
+                          toast({ title: "Error", description: "Failed to unassign", variant: "destructive" });
+                        }
+                      }}>Unassign</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader className="pb-2 sm:pb-3">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -321,12 +447,23 @@ export function MatterDetailPage({ id }: { id: string }) {
           </CardContent>
         </Card>
 
+        {m.debtor?.id && (
+          <AutomationPanel
+            matterId={id}
+            debtorId={m.debtor.id}
+            matterReference={m.reference}
+            debtorName={`${m.debtor.firstName} ${m.debtor.lastName}`}
+            debtorPhone={m.debtor?.whatsapp || m.debtor?.phone}
+          />
+        )}
         <WhatsAppMessaging
           matterId={id}
+          debtorId={m.debtor?.id}
           debtorName={m.debtor ? `${m.debtor.firstName} ${m.debtor.lastName}` : "Debtor"}
           debtorPhone={m.debtor?.whatsapp || m.debtor?.phone}
           messages={m.whatsappMessages || []}
         />
+        <CommunicationsLog matterId={id} debtorId={m.debtor?.id} />
       </div>
 
       {history.length > 0 && (

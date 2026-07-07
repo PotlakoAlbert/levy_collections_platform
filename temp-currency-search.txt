@@ -1,0 +1,125 @@
+﻿C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\AutomationPanel.tsx:65:}>(`/api/matters/${matterId}/automation`, { method: "GET" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\AutomationPanel.tsx:105:}>(`/api/matters/${matterId}/automation`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\AutomationPanel.tsx:132:await customFetch(`/api/matters/${matterId}/bot-draft/approve`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\AutomationPanel.tsx:149:await customFetch(`/api/matters/${matterId}/bot-draft/reject`, { method: "POST" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\AutomationPanel.tsx:168:`Dear ${debtorName},\n\nPlease find your Letter of Demand for matter ${matterReference}. Contact us urgently to discuss settlement.\n\n${doc.fileUrl ?? ""}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\AutomationPanel.tsx:183:await customFetch(`/api/documents/${generatedDocId}/send`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\AutomationPanel.tsx:253:className={`w-full font-semibold transition-all ${
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\CommunicationsLog.tsx:23:const data = await customFetch<any[]>(`/api/communications?matterId=${matterId}`, { method: "GET" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\CommunicationsLog.tsx:117:{c.channel === "SYSTEM" ? "System Activity" : `${c.channel} · ${c.to}`}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\GenerateTasksDialog.tsx:193:const response = await fetch(`/api/matters/${matterId}/generate-tasks`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\GenerateTasksDialog.tsx:207:description: `Generated ${result.count || templates.length} tasks for ${stage} stage`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\PromiseToPayDialog.tsx:82:const response = await fetch(`/api/matters/${matterId}/ptp`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\WhatsAppMessaging.tsx:77:const response = await fetch(`/api/matters/${matterId}/whatsapp/send`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\WhatsAppMessaging.tsx:212:`Hi ${debtorName}, we have an outstanding account balance that requires immediate payment. Please contact us to settle or arrange payment. Thank you.`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\matters\WhatsAppMessaging.tsx:224:`Hi ${debtorName}, we would like to discuss a payment arrangement for your outstanding balance. Please let us know your availability to discuss.`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\MatterCard.tsx:84:<Link href={`/matters/${id}`}>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\MatterCard.tsx:128:<Link href={`/matters/${id}`} className="cursor-pointer">
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\MatterCard.tsx:133:<Link href={`/matters/${id}#documents`} className="cursor-pointer">
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\MatterCard.tsx:139:<Link href={`/matters/${id}#tasks`} className="cursor-pointer">
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineBoard.tsx:258:toast({ title: "Success", description: `Moved ${matterIds.length} matter(s) to ${toStage}` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineBoard.tsx:435:toast({ title: "Moved", description: `Moved ${selectedMatterIds.length} matters to ${bulkTargetStage}` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineControls.tsx:71:...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineControls.tsx:78:link.setAttribute("download", `pipeline-export-${new Date().toISOString().split("T")[0]}.csv`);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineControls.tsx:86:description: `Exported ${allMatters.length} matters to CSV`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineControls.tsx:116:...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineControls.tsx:123:link.setAttribute("download", `pipeline-summary-${new Date().toISOString().split("T")[0]}.csv`);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\PipelineImplementationStatus.tsx:124:<Badge className={`gap-1 ${getStatusColor(item.status)}`}>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\pipeline\StageColumn.tsx:67:style={{ backgroundColor: `${stageColor}10`, borderColor: stageColor }}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\chart.tsx:45:const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\chart.tsx:83:${prefix} [data-chart=${id}] {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\chart.tsx:84:${colorConfig
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\chart.tsx:89:return color ? `  --color-${key}: ${color};` : null
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\chart.tsx:140:const key = `${labelKey || item?.dataKey || item?.name || "value"}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\chart.tsx:189:const key = `${nameKey || item.name || item.dataKey || "value"}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\chart.tsx:291:const key = `${nameKey || item.dataKey || "value"}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\form.tsx:60:formItemId: `${id}-form-item`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\form.tsx:61:formDescriptionId: `${id}-form-item-description`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\form.tsx:62:formMessageId: `${id}-form-item-message`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\form.tsx:116:? `${formDescriptionId}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\form.tsx:117:: `${formDescriptionId} ${formMessageId}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\progress.tsx:22:style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\sidebar.tsx:86:document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\ui\sidebar.tsx:612:return `${Math.floor(Math.random() * 40) + 50}%`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\components\layout.tsx:63:const isActive = location === item.href || location.startsWith(`${item.href}/`);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\hooks\use-mobile.tsx:9:const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\hooks\useAutomationSocket.ts:38:queryClient.invalidateQueries({ queryKey: [`/api/debtors/${debtorId}`] });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\hooks\useAutomationSocket.ts:69:toast({ title: "Job queued", description: payload?.label ? `${payload.label} queued` : "A workflow job has been queued" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\hooks\useAutomationSocket.ts:75:toast({ title: "Job started", description: payload?.label ? `${payload.label} started` : "A workflow job has started" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\hooks\useAutomationSocket.ts:103:toast({ title: "Document ready", description: `${docType} generated` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\lib\automation-toasts.ts:46:? `${draft.messageText.slice(0, 100)}...`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\lib\automation-toasts.ts:57:description: `${label} — processing next in queue`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:43:const debtorQueryKey = [`/api/debtors/${id}`];
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:51:const el = document.querySelector(`[data-key="${escaped}"]`) as HTMLElement | null;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:100:const activityId = payload?.eventLog?.id ?? payload?.communication?.id ?? `live-${Date.now()}`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:120:setLiveStatus(`${label} queued in ${payload?.queueName ?? "queue"}`);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:121:toast({ title: "Job queued", description: `${label} queued` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:128:setLiveStatus(`${label} started in ${payload?.queueName ?? "queue"}`);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:130:toast({ title: "Job started", description: `${label} has started` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:140:const key = waId ? `wa:${waId}` : commId ? `comm:${commId}` : `time:${createdAt}`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:156:toast({ title: "Document ready", description: `${docType} generated` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:193:await customFetch(`/api/debtors/${id}`, { method: "DELETE" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:211:await customFetch(`/api/documents/${doc.id}/send`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:219:toast({ title: "Sent", description: `Document sent via ${channels.join(",")}. Waiting for reply...` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:433:? `wa:${it.raw?.id}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:435:? `doc:${it.raw?.id}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:437:? `activity:${it.raw?.id ?? idx}`
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\detail.tsx:438:: `comm:${it.raw?.id}`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\new.tsx:29:toast({ title: "Debtor created", description: `${d.firstName} ${d.lastName}` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors\new.tsx:31:setLocation(`/matters/new?debtorId=${d.id}`);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matters\new.tsx:50:onSuccess: (m: any) => setLocation(`/matters/${m.id}`),
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\contact.tsx:23:const res = await fetch(`${API_URL}/api/contact`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\dashboard.tsx:34:await customFetch(`/api/tasks/${taskId}/archive`, { method: "PATCH" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\dashboard.tsx:81:const url = `/api/dashboard/summary?${params.toString()}`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\dashboard.tsx:193:<Cell key={`cell-${index}`} fill={entry.color} />
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\dashboard.tsx:216:<Link href={`/matters/${task.matterId}`} className="text-sm font-semibold text-primary hover:underline">
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors.tsx:93:const initials = `${debtor.firstName?.[0] ?? ""}${debtor.lastName?.[0] ?? ""}`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors.tsx:100:await customFetch(`/api/debtors/${debtor.id}`, { method: "DELETE" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\debtors.tsx:110:<Link href={`/debtors/${debtor.id}`} className="flex items-center gap-4 flex-1 no-underline">
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\diary-enhanced.tsx:222:<Link href={`/matters/${task.matterId}`}>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\diary.tsx:60:await customFetch(`/api/tasks/${taskId}/archive`, { method: "PATCH" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\diary.tsx:67:await customFetch(`/api/tasks/${taskId}/unarchive`, { method: "PATCH" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\diary.tsx:118:const res = await fetch(`/api/tasks/${taskId}/history`);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\diary.tsx:149:<button className={`px-3 py-1 rounded ${viewMode==="list"?"bg-primary text-primary-foreground":"border"}`} onClick={() => setViewMode("list")}>List</button>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\diary.tsx:150:<button className={`px-3 py-1 rounded ${viewMode==="calendar"?"bg-primary text-primary-foreground":"border"}`} onClick={() => setViewMode("calendar")}>Calendar</button>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\diary.tsx:272:<Link href={`/matters/${task.matterId}`}>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\documents.tsx:43:link.download = `${matterRef}_${docType}.html`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\documents.tsx:47:toast({ title: "Document generated", description: `${docType} for ${matterRef} is ready.` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\documents.tsx:178:link.download = `${data.matterReference ?? selectedDialogMatterId}_${docType}.html`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\documents.tsx:182:toast({ title: "Document generated", description: `${docType} is ready.` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\documents.tsx:234:link.download = doc.fileName || `${doc.matterReference || doc.matterId}_${selectedDocType}.html`;
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\documents.tsx:239:toast({ title: "Bulk generate complete", description: `${res.generated} generated, ${res.failed} failed` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:60:const data = await customFetch<any[]>(`/api/matters/${id}/assignees`, { method: "GET" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:97:toast({ title: "Stage advanced", description: `Matter moved to ${nextStage}` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:301:const response = await fetch(`/api/matters/${id}/ptp/deactivate`, { method: "PATCH" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:317:debtorName={m.debtor ? `${m.debtor.firstName} ${m.debtor.lastName}` : "Debtor"}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:361:const json = await customFetch<any>(`/api/matters/${id}/assignees`, {
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:396:await customFetch<void>(`/api/matters/${id}/assignees/${a.id}`, { method: "DELETE" });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:455:debtorName={`${m.debtor.firstName} ${m.debtor.lastName}`}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matter-detail.tsx:462:debtorName={m.debtor ? `${m.debtor.firstName} ${m.debtor.lastName}` : "Debtor"}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\matters.tsx:117:<Link href={`/matters/${matter.id}`}>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:170:return { period: `W/C ${format(weekStart, "dd MMM")}`, amount };
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:203:text: `Portfolio recovery rate is ${rate.toFixed(1)}% — ${formatCurrency(summary.totalCollected)} collected against ${formatCurrency(summary.totalCapital)} capital.`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:209:text: `${summary.overdueTasksCount} overdue task${summary.overdueTasksCount !== 1 ? "s" : ""} need attention — review the Diary to clear or archive them.`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:218:text: `${formatCurrency(risky.value)} sits in the 120+ day aging bucket across ${risky.count} matter${risky.count !== 1 ? "s" : ""} — prioritise escalation.`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:227:text: `${top.agentName} leads collections with ${formatCurrency(top.totalCollected)} recovered across the portfolio.`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:239:text: `Collections ${dir} ${Math.abs(delta).toFixed(0)}% vs the previous period (${formatCurrency(periodCollected)} this period).`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:253:headers.map((h) => `"${String(row[h] ?? "").replace(/"/g, '""')}"`).join(",")
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:346:`/api/dashboard/summary?${params.toString()}`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:430:downloadCsv(`levy-aged-debtors-${format(new Date(), "yyyy-MM-dd")}.csv`, rows);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:441:downloadCsv(`levy-collections-by-agent-${format(new Date(), "yyyy-MM-dd")}.csv`, rows);
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:527:subtitle={`${summary.activeMatters} active matters`}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:534:subtitle={timeframe !== "all" ? `${formatCurrency(periodPayments)} in selected period` : "Life to date"}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:540:value={`${recoveryRate.toFixed(1)}%`}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:548:subtitle={`${agingRows.length} matters in aging report`}
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:665:<Link href={`/matters/${row.matterId}`} className="font-mono text-primary hover:underline text-xs">
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:738:width: `${Math.min(100, (row.totalOutstanding / max) * 100)}%`,
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\reports.tsx:890:<Link href={`/matters/${row.matterId}`} className="font-mono text-xs text-primary hover:underline">
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\settings-comprehensive.tsx:95:<ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "" : "-rotate-90"}`} />
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\settings-comprehensive.tsx:178:<div className="text-xs text-muted-foreground">GL Code: {levy.glCode} · {levy.type === "percentage" ? `${levy.rate}%` : formatCurrency(levy.amount)} · Active: {levy.effective}</div>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\settings-comprehensive.tsx:220:toast({ title: "User created", description: `${name} was added successfully` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\settings-comprehensive.tsx:588:className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\settings-comprehensive.tsx:606:<Badge className={`${ROLE_COLORS[userRole] || ROLE_COLORS.VIEWER} w-full text-center justify-center py-1`}>
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\settings.tsx:124:toast({ title: "User created", description: `${name} was created.` });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\pages\settings.tsx:207:await customFetch(`/api/users/${user.id}`, { method: 'DELETE' });
+C:\Users\USER\Documents\ Attorneys\Levy-Collection-Manager\artifacts\levy-platform\src\App.tsx:178:<WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>

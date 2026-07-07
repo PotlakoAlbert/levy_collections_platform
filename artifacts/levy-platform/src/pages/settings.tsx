@@ -1,3 +1,28 @@
+// ============================================================================
+// Settings Page - Mission-Critical Configuration Hub
+// ============================================================================
+// Re-export the comprehensive, modular settings page which includes:
+// - Levy & Fee Configuration (GL mapping, percentage/fixed rates)
+// - User & Role Management (ADMIN, ATTORNEY, COLLECTOR, VIEWER)
+// - Branding & UI Customization (logos, colors, navigation)
+// - Notifications & Communication (email, WhatsApp, SMS triggers)
+// - Audit Logs & Compliance (full change tracking)
+// - Test Environment / Sandbox Mode (safe testing)
+// ============================================================================
+
+export { SettingsComprehensivePage as SettingsPage } from "./settings-comprehensive";
+
+// Legacy exports for backward compatibility
+import { SettingsComprehensivePage } from "./settings-comprehensive";
+const SettingsPageLegacy = SettingsComprehensivePage;
+
+export default SettingsPageLegacy;
+
+// ============================================================================
+// OLD CODE PRESERVED BELOW (for reference, can be removed)
+// ============================================================================
+
+/*
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useListUsers, useCreateUser, useUpdateUser } from "@workspace/api-client-react";
@@ -18,7 +43,7 @@ const ROLE_COLORS: Record<string, string> = {
   AGENT_VIEWER: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
-export function SettingsPage() {
+export function SettingsPageLegacy() {
   const { data, isLoading } = useListUsers();
   const users = (data as any)?.users ?? [];
   const createUser = useCreateUser();
@@ -220,3 +245,4 @@ export function SettingsPage() {
     </div>
   );
 }
+*/

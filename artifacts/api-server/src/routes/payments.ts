@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { db, paymentsTable, mattersTable, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { authMiddleware } from "../lib/auth";
+import { emitEvent } from "../lib/hooks/event-hooks";
 import { ListPaymentsQueryParams, RecordPaymentBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -61,6 +62,14 @@ router.post("/payments", async (req, res): Promise<void> => {
   await db.update(mattersTable).set({ totalPaid: String(newPaid) }).where(eq(mattersTable.id, parsed.data.matterId));
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.user!.id));
+
+  // Emit PAYMENT_RECEIVED event to trigger automation
+  await emitEvent("PAYMENT_RECEIVED", {
+    paymentId: payment.id,
+    matterId: payment.matterId,
+    amount: parsed.data.amount,
+    createdById: req.user!.id,
+  });
 
   res.status(201).json({
     id: payment.id,

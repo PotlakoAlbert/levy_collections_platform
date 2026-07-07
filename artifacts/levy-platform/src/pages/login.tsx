@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLogin } from "@workspace/api-client-react";
@@ -25,7 +26,7 @@ export function LoginPage() {
   const loginMutation = useLogin();
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: (zodResolver as any)(formSchema) as unknown as Resolver<z.infer<typeof formSchema>>,
     defaultValues: {
       email: "",
       password: "",

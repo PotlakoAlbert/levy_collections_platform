@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 
 export async function generateMatterReference(): Promise<string> {
   const year = new Date().getFullYear();
-  const prefix = "BAM";
+  const prefix = "";
 
   // Upsert counter
   const existing = await db.select().from(matterCountersTable).where(eq(matterCountersTable.year, year));

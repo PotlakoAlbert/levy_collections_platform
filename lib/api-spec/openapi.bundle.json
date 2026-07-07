@@ -1,0 +1,5291 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Api",
+    "version": "0.1.0",
+    "description": "Levy Collection Practice Management Platform API.\n\n**Interactive docs:** [Swagger UI](/api/docs)\n\n**Authenticate:** Call `POST /auth/login`, copy the `token` from the response,\nthen click **Authorize** in Swagger UI and paste `Bearer <token>`.\n"
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Base API path (relative)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "health",
+      "description": "Health operations"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication"
+    },
+    {
+      "name": "matters",
+      "description": "Matter management"
+    },
+    {
+      "name": "debtors",
+      "description": "Debtor management"
+    },
+    {
+      "name": "schemes",
+      "description": "Scheme management"
+    },
+    {
+      "name": "agents",
+      "description": "Managing agent management"
+    },
+    {
+      "name": "documents",
+      "description": "Document generation and management"
+    },
+    {
+      "name": "payments",
+      "description": "Payment recording"
+    },
+    {
+      "name": "tasks",
+      "description": "Diary and task management"
+    },
+    {
+      "name": "reports",
+      "description": "Reporting"
+    },
+    {
+      "name": "users",
+      "description": "User management"
+    },
+    {
+      "name": "dashboard",
+      "description": "Dashboard data"
+    },
+    {
+      "name": "public",
+      "description": "Public unauthenticated endpoints"
+    },
+    {
+      "name": "communications",
+      "description": "Communications log"
+    },
+    {
+      "name": "creditors",
+      "description": "Creditor management"
+    },
+    {
+      "name": "requisitions",
+      "description": "Requisition management"
+    },
+    {
+      "name": "posting-codes",
+      "description": "Posting code management"
+    },
+    {
+      "name": "transactions",
+      "description": "Matter transactions"
+    },
+    {
+      "name": "admin",
+      "description": "Admin dashboard and monitoring"
+    },
+    {
+      "name": "schema-admin",
+      "description": "Schema administration (assignees, rules, bot states)"
+    },
+    {
+      "name": "whatsapp",
+      "description": "WhatsApp integration"
+    },
+    {
+      "name": "automations",
+      "description": "Automation testing and monitoring"
+    },
+    {
+      "name": "dev",
+      "description": "Development and diagnostic endpoints"
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "healthCheck",
+        "tags": [
+          "health"
+        ],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get current user",
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "responses": {
+          "200": {
+            "description": "Logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "listUsers",
+        "tags": [
+          "users"
+        ],
+        "summary": "List all users",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createUser",
+        "tags": [
+          "users"
+        ],
+        "summary": "Create a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "getUser",
+        "tags": [
+          "users"
+        ],
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateUser",
+        "tags": [
+          "users"
+        ],
+        "summary": "Update user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUser",
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete user (admin)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted"
+          }
+        }
+      }
+    },
+    "/agents": {
+      "get": {
+        "operationId": "listAgents",
+        "tags": [
+          "agents"
+        ],
+        "summary": "List managing agents",
+        "responses": {
+          "200": {
+            "description": "List of agents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ManagingAgent"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAgent",
+        "tags": [
+          "agents"
+        ],
+        "summary": "Create managing agent",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agent created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagingAgent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}": {
+      "get": {
+        "operationId": "getAgent",
+        "tags": [
+          "agents"
+        ],
+        "summary": "Get agent by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagingAgent"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateAgent",
+        "tags": [
+          "agents"
+        ],
+        "summary": "Update agent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagingAgent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemes": {
+      "get": {
+        "operationId": "listSchemes",
+        "tags": [
+          "schemes"
+        ],
+        "summary": "List schemes",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of schemes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Scheme"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createScheme",
+        "tags": [
+          "schemes"
+        ],
+        "summary": "Create scheme",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSchemeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Scheme created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scheme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemes/{id}": {
+      "get": {
+        "operationId": "getScheme",
+        "tags": [
+          "schemes"
+        ],
+        "summary": "Get scheme by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scheme",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scheme"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateScheme",
+        "tags": [
+          "schemes"
+        ],
+        "summary": "Update scheme",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSchemeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated scheme",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scheme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debtors": {
+      "get": {
+        "operationId": "listDebtors",
+        "tags": [
+          "debtors"
+        ],
+        "summary": "List debtors",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of debtors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Debtor"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createDebtor",
+        "tags": [
+          "debtors"
+        ],
+        "summary": "Create debtor",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDebtorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Debtor created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Debtor"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debtors/{id}": {
+      "get": {
+        "operationId": "getDebtor",
+        "tags": [
+          "debtors"
+        ],
+        "summary": "Get debtor by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Debtor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Debtor"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateDebtor",
+        "tags": [
+          "debtors"
+        ],
+        "summary": "Update debtor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDebtorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated debtor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Debtor"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteDebtor",
+        "tags": [
+          "debtors"
+        ],
+        "summary": "Delete debtor (admin)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Debtor deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/debtors/{id}/matters": {
+      "get": {
+        "operationId": "getDebtorMatters",
+        "tags": [
+          "debtors"
+        ],
+        "summary": "Get all matters for a debtor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matters for debtor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Matter"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matters": {
+      "get": {
+        "operationId": "listMatters",
+        "tags": [
+          "matters"
+        ],
+        "summary": "List matters",
+        "parameters": [
+          {
+            "name": "stage",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "schemeId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "agentId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assignedToId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of matters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatterSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMatter",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Create matter",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMatterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Matter created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Matter"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matters/{id}": {
+      "get": {
+        "operationId": "getMatter",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Get matter details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matter with full details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatterDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMatter",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Update matter",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMatterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated matter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Matter"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matters/{id}/stage": {
+      "patch": {
+        "operationId": "updateMatterStage",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Advance matter to next stage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stage updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Matter"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid stage transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matters/{id}/history": {
+      "get": {
+        "operationId": "getMatterHistory",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Get matter stage history",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stage history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StageHistory"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matters/{id}/financials": {
+      "get": {
+        "operationId": "getMatterFinancials",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Get matter financial summary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Financial summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents": {
+      "get": {
+        "operationId": "listDocuments",
+        "tags": [
+          "documents"
+        ],
+        "summary": "List documents",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of documents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Document"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/generate": {
+      "post": {
+        "operationId": "generateDocument",
+        "tags": [
+          "documents"
+        ],
+        "summary": "Generate a document for a matter",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateDocumentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Document generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/bulk-generate": {
+      "post": {
+        "operationId": "bulkGenerateDocuments",
+        "tags": [
+          "documents"
+        ],
+        "summary": "Bulk generate documents for multiple matters",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkGenerateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk generation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkGenerateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{id}/download": {
+      "get": {
+        "operationId": "downloadDocument",
+        "tags": [
+          "documents"
+        ],
+        "summary": "Download a document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDownload"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments": {
+      "get": {
+        "operationId": "listPayments",
+        "tags": [
+          "payments"
+        ],
+        "summary": "List payments",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of payments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "recordPayment",
+        "tags": [
+          "payments"
+        ],
+        "summary": "Record a payment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordPaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "operationId": "listTasks",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "List tasks",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assigneeId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "myTasks",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTask",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Create a task",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "patch": {
+        "operationId": "updateTask",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Update a task",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}/complete": {
+      "patch": {
+        "operationId": "completeTask",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Mark a task as complete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/aged-debtors": {
+      "get": {
+        "operationId": "getAgedDebtorsReport",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Aged debtors report",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "schemeId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aged debtors report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgedDebtorRow"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/collections-by-agent": {
+      "get": {
+        "operationId": "getCollectionsByAgent",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Collections by agent report",
+        "parameters": [
+          {
+            "name": "fromDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collections by agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CollectionsByAgentRow"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/pipeline-summary": {
+      "get": {
+        "operationId": "getPipelineSummary",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Pipeline summary by stage",
+        "responses": {
+          "200": {
+            "description": "Pipeline summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PipelineSummaryRow"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard/summary": {
+      "get": {
+        "operationId": "getDashboardSummary",
+        "tags": [
+          "dashboard"
+        ],
+        "summary": "Get dashboard summary data",
+        "responses": {
+          "200": {
+            "description": "Dashboard summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard/overdue-tasks": {
+      "get": {
+        "operationId": "getDashboardOverdueTasks",
+        "tags": [
+          "dashboard"
+        ],
+        "summary": "Get top overdue tasks for dashboard",
+        "responses": {
+          "200": {
+            "description": "Overdue tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interest-rates": {
+      "get": {
+        "operationId": "listInterestRates",
+        "tags": [
+          "reports"
+        ],
+        "summary": "List prescribed interest rates",
+        "responses": {
+          "200": {
+            "description": "Interest rates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InterestRate"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createInterestRate",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Create interest rate entry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInterestRateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Interest rate created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterestRate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contact": {
+      "post": {
+        "operationId": "submitContact",
+        "tags": [
+          "public"
+        ],
+        "summary": "Submit public contact form",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "message"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Contact request received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communications": {
+      "get": {
+        "operationId": "listCommunications",
+        "tags": [
+          "communications"
+        ],
+        "summary": "List communications",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "debtorId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Communications list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Communication"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCommunication",
+        "tags": [
+          "communications"
+        ],
+        "summary": "Log a communication",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "matterId": {
+                    "type": "string"
+                  },
+                  "debtorId": {
+                    "type": "string"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "inbound",
+                      "outbound"
+                    ]
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "channel",
+                  "direction",
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Communication logged"
+          }
+        }
+      }
+    },
+    "/creditors": {
+      "get": {
+        "operationId": "listCreditors",
+        "tags": [
+          "creditors"
+        ],
+        "summary": "List creditors",
+        "responses": {
+          "200": {
+            "description": "Creditors list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCreditor",
+        "tags": [
+          "creditors"
+        ],
+        "summary": "Create creditor",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creditor created"
+          }
+        }
+      }
+    },
+    "/requisitions": {
+      "get": {
+        "operationId": "listRequisitions",
+        "tags": [
+          "requisitions"
+        ],
+        "summary": "List requisitions",
+        "responses": {
+          "200": {
+            "description": "Requisitions list"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createRequisition",
+        "tags": [
+          "requisitions"
+        ],
+        "summary": "Create requisition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Requisition created"
+          }
+        }
+      }
+    },
+    "/posting-codes": {
+      "get": {
+        "operationId": "listPostingCodes",
+        "tags": [
+          "posting-codes"
+        ],
+        "summary": "List posting codes",
+        "responses": {
+          "200": {
+            "description": "Posting codes list"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPostingCode",
+        "tags": [
+          "posting-codes"
+        ],
+        "summary": "Create posting code (admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Posting code created"
+          }
+        }
+      }
+    },
+    "/matters/{id}/transactions": {
+      "get": {
+        "operationId": "listMatterTransactions",
+        "tags": [
+          "transactions"
+        ],
+        "summary": "List matter transactions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transactions list"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMatterTransaction",
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Create matter transaction",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created"
+          }
+        }
+      }
+    },
+    "/debtors/{id}/activity": {
+      "get": {
+        "operationId": "getDebtorActivity",
+        "tags": [
+          "debtors"
+        ],
+        "summary": "Get debtor activity log",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity log"
+          }
+        }
+      }
+    },
+    "/documents/{id}/send": {
+      "post": {
+        "operationId": "sendDocument",
+        "tags": [
+          "documents"
+        ],
+        "summary": "Send document to debtor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "whatsapp"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document sent"
+          }
+        }
+      }
+    },
+    "/tasks/{id}/archive": {
+      "patch": {
+        "operationId": "archiveTask",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Archive a task (removes from dashboard and diary)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}/unarchive": {
+      "patch": {
+        "operationId": "unarchiveTask",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Restore an archived task",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task restored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}/history": {
+      "get": {
+        "operationId": "getTaskHistory",
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Get task history",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task history"
+          }
+        }
+      }
+    },
+    "/matters/{id}/ptp": {
+      "get": {
+        "operationId": "getMatterPtp",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Get promise-to-pay arrangements",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PTP arrangements"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMatterPtp",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Create promise-to-pay arrangement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "PTP created"
+          }
+        }
+      }
+    },
+    "/matters/{id}/ptp/deactivate": {
+      "patch": {
+        "operationId": "deactivateMatterPtp",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Deactivate promise-to-pay",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PTP deactivated"
+          }
+        }
+      }
+    },
+    "/matters/{id}/generate-tasks": {
+      "post": {
+        "operationId": "generateMatterTasks",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Generate tasks for matter stage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tasks generated"
+          }
+        }
+      }
+    },
+    "/matters/{id}/assignees": {
+      "get": {
+        "operationId": "listMatterAssignees",
+        "tags": [
+          "matters"
+        ],
+        "summary": "List matter assignees",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignees list"
+          }
+        }
+      },
+      "post": {
+        "operationId": "assignMatterUser",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Assign user to matter",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User assigned"
+          }
+        }
+      }
+    },
+    "/matters/{id}/assignees/{assigneeId}": {
+      "delete": {
+        "operationId": "removeMatterAssignee",
+        "tags": [
+          "matters"
+        ],
+        "summary": "Remove matter assignee",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assigneeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignee removed"
+          }
+        }
+      }
+    },
+    "/matters/{id}/whatsapp/send": {
+      "post": {
+        "operationId": "sendMatterWhatsApp",
+        "tags": [
+          "whatsapp",
+          "matters"
+        ],
+        "summary": "Send WhatsApp message for matter",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "templateName": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent"
+          }
+        }
+      }
+    },
+    "/matters/{id}/whatsapp/messages": {
+      "get": {
+        "operationId": "listMatterWhatsAppMessages",
+        "tags": [
+          "whatsapp",
+          "matters"
+        ],
+        "summary": "List WhatsApp messages for matter",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "WhatsApp messages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WhatsappMessage"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/automation/weekly": {
+      "get": {
+        "operationId": "getWeeklyAutomationReport",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Weekly automation report",
+        "responses": {
+          "200": {
+            "description": "Weekly report"
+          }
+        }
+      }
+    },
+    "/reports/automation/monthly": {
+      "get": {
+        "operationId": "getMonthlyAutomationReport",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Monthly automation report",
+        "responses": {
+          "200": {
+            "description": "Monthly report"
+          }
+        }
+      }
+    },
+    "/reports/automation/summary": {
+      "get": {
+        "operationId": "getAutomationReportSummary",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Automation report summary",
+        "responses": {
+          "200": {
+            "description": "Summary"
+          }
+        }
+      }
+    },
+    "/reports/automation/generate": {
+      "post": {
+        "operationId": "generateAutomationReport",
+        "tags": [
+          "reports"
+        ],
+        "summary": "Generate automation report",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "weekly",
+                      "monthly"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Report generated"
+          }
+        }
+      }
+    },
+    "/admin/health": {
+      "get": {
+        "operationId": "adminHealth",
+        "tags": [
+          "admin"
+        ],
+        "summary": "Admin system health",
+        "responses": {
+          "200": {
+            "description": "System health"
+          }
+        }
+      }
+    },
+    "/admin/queues": {
+      "get": {
+        "operationId": "adminListQueues",
+        "tags": [
+          "admin"
+        ],
+        "summary": "List job queues",
+        "responses": {
+          "200": {
+            "description": "Queue list"
+          }
+        }
+      }
+    },
+    "/admin/queues/{queueName}": {
+      "get": {
+        "operationId": "adminQueueDetail",
+        "tags": [
+          "admin"
+        ],
+        "summary": "Queue detail and jobs",
+        "parameters": [
+          {
+            "name": "queueName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Queue detail"
+          }
+        }
+      }
+    },
+    "/admin/automation-metrics": {
+      "get": {
+        "operationId": "adminAutomationMetrics",
+        "tags": [
+          "admin"
+        ],
+        "summary": "Automation metrics",
+        "responses": {
+          "200": {
+            "description": "Metrics"
+          }
+        }
+      }
+    },
+    "/admin/config": {
+      "get": {
+        "operationId": "adminConfig",
+        "tags": [
+          "admin"
+        ],
+        "summary": "System configuration (non-secret)",
+        "responses": {
+          "200": {
+            "description": "Config"
+          }
+        }
+      }
+    },
+    "/matter-assignees/{matterId}": {
+      "get": {
+        "operationId": "listMatterAssigneesSchema",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "List matter assignees (schema admin)",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignees"
+          }
+        }
+      }
+    },
+    "/matter-assignees": {
+      "post": {
+        "operationId": "createMatterAssignee",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Create matter assignee",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Assignee created"
+          }
+        }
+      }
+    },
+    "/matter-assignees/{id}/unassign": {
+      "patch": {
+        "operationId": "unassignMatterAssignee",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Unassign matter assignee",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unassigned"
+          }
+        }
+      }
+    },
+    "/auto-advance-rules": {
+      "get": {
+        "operationId": "listAutoAdvanceRules",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "List auto-advance rules",
+        "responses": {
+          "200": {
+            "description": "Rules list"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAutoAdvanceRule",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Create auto-advance rule",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rule created"
+          }
+        }
+      }
+    },
+    "/auto-advance-rules/{fromStage}/{toStage}": {
+      "get": {
+        "operationId": "getAutoAdvanceRule",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Get auto-advance rule by stages",
+        "parameters": [
+          {
+            "name": "fromStage",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toStage",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rule"
+          }
+        }
+      }
+    },
+    "/auto-advance-rules/{id}": {
+      "patch": {
+        "operationId": "updateAutoAdvanceRule",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Update auto-advance rule",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rule updated"
+          }
+        }
+      }
+    },
+    "/bot-states/{matterId}": {
+      "get": {
+        "operationId": "getBotState",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Get bot state for matter",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bot state"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateBotState",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Update bot state",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bot state updated"
+          }
+        }
+      }
+    },
+    "/bot-states": {
+      "post": {
+        "operationId": "createBotState",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Create bot state",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bot state created"
+          }
+        }
+      }
+    },
+    "/bot-states/{matterId}/escalate": {
+      "patch": {
+        "operationId": "escalateBotState",
+        "tags": [
+          "schema-admin"
+        ],
+        "summary": "Escalate bot state",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Escalated"
+          }
+        }
+      }
+    },
+    "/automation-status": {
+      "get": {
+        "operationId": "automationStatus",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Automation system status",
+        "responses": {
+          "200": {
+            "description": "Status"
+          }
+        }
+      }
+    },
+    "/test-job": {
+      "post": {
+        "operationId": "testJob",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Enqueue test job",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job enqueued"
+          }
+        }
+      }
+    },
+    "/test-interest-job/{matterId}": {
+      "post": {
+        "operationId": "testInterestJob",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Enqueue interest calculation job",
+        "parameters": [
+          {
+            "name": "matterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job enqueued"
+          }
+        }
+      }
+    },
+    "/test-whatsapp-job": {
+      "post": {
+        "operationId": "testWhatsAppJob",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Enqueue WhatsApp test job",
+        "responses": {
+          "200": {
+            "description": "Job enqueued"
+          }
+        }
+      }
+    },
+    "/queue-health": {
+      "get": {
+        "operationId": "queueHealth",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Queue health check",
+        "responses": {
+          "200": {
+            "description": "Queue health"
+          }
+        }
+      }
+    },
+    "/test-ai": {
+      "post": {
+        "operationId": "testAi",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Test AI service",
+        "responses": {
+          "200": {
+            "description": "AI response"
+          }
+        }
+      }
+    },
+    "/test-ai-classify": {
+      "post": {
+        "operationId": "testAiClassify",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Test AI message classification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Classification result"
+          }
+        }
+      }
+    },
+    "/test-ai-draft": {
+      "post": {
+        "operationId": "testAiDraft",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Test AI draft generation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Draft"
+          }
+        }
+      }
+    },
+    "/test-ai-advance": {
+      "post": {
+        "operationId": "testAiAdvance",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Test AI stage advance decision",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Decision"
+          }
+        }
+      }
+    },
+    "/test-ai-payment": {
+      "post": {
+        "operationId": "testAiPayment",
+        "tags": [
+          "dev"
+        ],
+        "summary": "Test AI payment analysis",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis"
+          }
+        }
+      }
+    },
+    "/ai-info": {
+      "get": {
+        "operationId": "aiInfo",
+        "tags": [
+          "dev"
+        ],
+        "summary": "AI service configuration info",
+        "responses": {
+          "200": {
+            "description": "AI info"
+          }
+        }
+      }
+    },
+    "/whatsapp/webhook": {
+      "get": {
+        "operationId": "whatsappWebhookVerify",
+        "tags": [
+          "whatsapp"
+        ],
+        "summary": "WhatsApp webhook verification (Meta)",
+        "parameters": [
+          {
+            "name": "hub.mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.verify_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.challenge",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Challenge returned"
+          }
+        }
+      },
+      "post": {
+        "operationId": "whatsappWebhookReceive",
+        "tags": [
+          "whatsapp"
+        ],
+        "summary": "Receive WhatsApp webhook events",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Event received"
+          }
+        }
+      }
+    },
+    "/test-whatsapp-send": {
+      "post": {
+        "operationId": "testWhatsAppSend",
+        "tags": [
+          "whatsapp",
+          "dev"
+        ],
+        "summary": "Send test WhatsApp message",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent"
+          }
+        }
+      }
+    },
+    "/test-whatsapp-webhook": {
+      "post": {
+        "operationId": "testWhatsAppWebhook",
+        "tags": [
+          "whatsapp",
+          "dev"
+        ],
+        "summary": "Simulate WhatsApp webhook payload",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Processed"
+          }
+        }
+      }
+    },
+    "/whatsapp-info": {
+      "get": {
+        "operationId": "whatsappInfo",
+        "tags": [
+          "whatsapp"
+        ],
+        "summary": "WhatsApp service status",
+        "responses": {
+          "200": {
+            "description": "Service info"
+          }
+        }
+      }
+    },
+    "/test-automations/trigger-debtor-created": {
+      "post": {
+        "operationId": "triggerDebtorCreated",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Trigger debtor-created automation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Triggered"
+          }
+        }
+      }
+    },
+    "/test-automations/trigger-debtor-status-changed": {
+      "post": {
+        "operationId": "triggerDebtorStatusChanged",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Trigger debtor-status-changed automation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Triggered"
+          }
+        }
+      }
+    },
+    "/test-automations/trigger-matter-created": {
+      "post": {
+        "operationId": "triggerMatterCreated",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Trigger matter-created automation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Triggered"
+          }
+        }
+      }
+    },
+    "/test-automations/trigger-payment-received": {
+      "post": {
+        "operationId": "triggerPaymentReceived",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Trigger payment-received automation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Triggered"
+          }
+        }
+      }
+    },
+    "/test-automations/trigger-stage-changed": {
+      "post": {
+        "operationId": "triggerStageChanged",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Trigger stage-changed automation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Triggered"
+          }
+        }
+      }
+    },
+    "/test-automations/queue-status": {
+      "get": {
+        "operationId": "testAutomationsQueueStatus",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Automation queue status",
+        "responses": {
+          "200": {
+            "description": "Queue status"
+          }
+        }
+      }
+    },
+    "/test-automations/queue/{queueName}/jobs": {
+      "get": {
+        "operationId": "testAutomationsQueueJobs",
+        "tags": [
+          "automations"
+        ],
+        "summary": "List jobs in queue",
+        "parameters": [
+          {
+            "name": "queueName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobs list"
+          }
+        }
+      }
+    },
+    "/test-automations/enqueue-job": {
+      "post": {
+        "operationId": "testAutomationsEnqueueJob",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Enqueue arbitrary job",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job enqueued"
+          }
+        }
+      }
+    },
+    "/test-automations/run-full-flow": {
+      "post": {
+        "operationId": "testAutomationsRunFullFlow",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Run full automation test flow",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow completed"
+          }
+        }
+      }
+    },
+    "/test-automations/system-status": {
+      "get": {
+        "operationId": "testAutomationsSystemStatus",
+        "tags": [
+          "automations"
+        ],
+        "summary": "Full automation system status",
+        "responses": {
+          "200": {
+            "description": "System status"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "required": [
+          "token",
+          "user"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "isActive",
+          "createdAt"
+        ]
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "password",
+          "role"
+        ]
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "password": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ManagingAgent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "schemeCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive",
+          "createdAt"
+        ]
+      },
+      "CreateAgentRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateAgentRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Scheme": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "agentName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "levyAmount": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "matterCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "agentId",
+          "isActive",
+          "createdAt"
+        ]
+      },
+      "CreateSchemeRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "levyAmount": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "agentId"
+        ]
+      },
+      "UpdateSchemeRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "levyAmount": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Debtor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "idNumber": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "companyName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whatsapp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "physicalAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "matterCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "whatsappMessages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WhatsappMessage"
+            }
+          },
+          "communications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Communication"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "fullName",
+          "status",
+          "createdAt"
+        ]
+      },
+      "CreateDebtorRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "idNumber": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "companyName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whatsapp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "physicalAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "status"
+        ]
+      },
+      "UpdateDebtorRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "idNumber": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "companyName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whatsapp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "physicalAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "Matter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "debtorId": {
+            "type": "string"
+          },
+          "schemeId": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "capitalArrears": {
+            "type": "number"
+          },
+          "interest": {
+            "type": "number"
+          },
+          "legalCosts": {
+            "type": "number"
+          },
+          "totalPaid": {
+            "type": "number"
+          },
+          "interestFromDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lodDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "s129Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summonsDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "judgmentDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "writDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "saleDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assignedToId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdById": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "debtorId",
+          "schemeId",
+          "unit",
+          "stage",
+          "priority",
+          "status",
+          "capitalArrears",
+          "interest",
+          "legalCosts",
+          "totalPaid",
+          "createdById",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "MatterSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "debtorName": {
+            "type": "string"
+          },
+          "schemeName": {
+            "type": "string"
+          },
+          "agentName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "capitalArrears": {
+            "type": "number"
+          },
+          "interest": {
+            "type": "number"
+          },
+          "legalCosts": {
+            "type": "number"
+          },
+          "totalPaid": {
+            "type": "number"
+          },
+          "totalOutstanding": {
+            "type": "number"
+          },
+          "assignedToName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "debtorName",
+          "schemeName",
+          "unit",
+          "stage",
+          "priority",
+          "status",
+          "capitalArrears",
+          "interest",
+          "legalCosts",
+          "totalPaid",
+          "totalOutstanding",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "MatterDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "debtor": {
+            "$ref": "#/components/schemas/Debtor"
+          },
+          "scheme": {
+            "$ref": "#/components/schemas/Scheme"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "capitalArrears": {
+            "type": "number"
+          },
+          "interest": {
+            "type": "number"
+          },
+          "legalCosts": {
+            "type": "number"
+          },
+          "totalPaid": {
+            "type": "number"
+          },
+          "interestFromDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lodDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "s129Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summonsDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "judgmentDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "writDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "saleDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assignedToId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assignedToName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StageHistory"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "debtor",
+          "scheme",
+          "unit",
+          "stage",
+          "priority",
+          "status",
+          "capitalArrears",
+          "interest",
+          "legalCosts",
+          "totalPaid",
+          "createdAt",
+          "updatedAt",
+          "tasks",
+          "documents",
+          "payments",
+          "history"
+        ]
+      },
+      "CreateMatterRequest": {
+        "type": "object",
+        "properties": {
+          "debtorId": {
+            "type": "string"
+          },
+          "schemeId": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "capitalArrears": {
+            "type": "number"
+          },
+          "legalCosts": {
+            "type": "number"
+          },
+          "interestFromDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assignedToId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "debtorId",
+          "schemeId",
+          "unit",
+          "priority",
+          "capitalArrears"
+        ]
+      },
+      "UpdateMatterRequest": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "capitalArrears": {
+            "type": "number"
+          },
+          "legalCosts": {
+            "type": "number"
+          },
+          "interestFromDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assignedToId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lodDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "s129Date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summonsDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "judgmentDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "writDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "saleDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "UpdateStageRequest": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "stage"
+        ]
+      },
+      "StageHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "matterId": {
+            "type": "string"
+          },
+          "fromStage": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toStage": {
+            "type": "string"
+          },
+          "changedByName": {
+            "type": "string"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "matterId",
+          "toStage",
+          "changedByName",
+          "createdAt"
+        ]
+      },
+      "FinancialSummary": {
+        "type": "object",
+        "properties": {
+          "matterId": {
+            "type": "string"
+          },
+          "capitalArrears": {
+            "type": "number"
+          },
+          "interestAccrued": {
+            "type": "number"
+          },
+          "interestRate": {
+            "type": "number"
+          },
+          "interestFromDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "interestDays": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "interestPerDay": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "legalCosts": {
+            "type": "number"
+          },
+          "totalPaid": {
+            "type": "number"
+          },
+          "totalOutstanding": {
+            "type": "number"
+          },
+          "runningBalance": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "matterId",
+          "capitalArrears",
+          "interestAccrued",
+          "interestRate",
+          "legalCosts",
+          "totalPaid",
+          "totalOutstanding",
+          "runningBalance"
+        ]
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "matterId": {
+            "type": "string"
+          },
+          "matterReference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "docType": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "generatedByName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sentVia": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sentAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "matterId",
+          "docType",
+          "fileName",
+          "fileUrl",
+          "createdAt"
+        ]
+      },
+      "GenerateDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "matterId": {
+            "type": "string"
+          },
+          "docType": {
+            "type": "string"
+          },
+          "customData": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "matterId",
+          "docType"
+        ]
+      },
+      "BulkGenerateRequest": {
+        "type": "object",
+        "properties": {
+          "matterIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "docType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "matterIds",
+          "docType"
+        ]
+      },
+      "BulkGenerateResponse": {
+        "type": "object",
+        "properties": {
+          "generated": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "generated",
+          "failed",
+          "documents",
+          "errors"
+        ]
+      },
+      "DocumentDownload": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "fileName",
+          "expiresAt"
+        ]
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "matterId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "method": {
+            "type": "string"
+          },
+          "receivedDate": {
+            "type": "string"
+          },
+          "allocatedTo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "receiptedByName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "matterId",
+          "amount",
+          "method",
+          "receivedDate",
+          "createdAt"
+        ]
+      },
+      "RecordPaymentRequest": {
+        "type": "object",
+        "properties": {
+          "matterId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "method": {
+            "type": "string"
+          },
+          "receivedDate": {
+            "type": "string"
+          },
+          "allocatedTo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "matterId",
+          "amount",
+          "method",
+          "receivedDate"
+        ]
+      },
+      "WhatsappMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "matterId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "debtorId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "direction": {
+            "type": "string"
+          },
+          "messageType": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "waMessageId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "errorMsg": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdById": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "direction",
+          "messageType",
+          "content",
+          "status"
+        ]
+      },
+      "Communication": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "matterId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "to": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdById": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "to",
+          "channel",
+          "body",
+          "status"
+        ]
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "matterId": {
+            "type": "string"
+          },
+          "matterReference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assigneeId": {
+            "type": "string"
+          },
+          "assigneeName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isAutoGen": {
+            "type": "boolean"
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completionNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "matterId",
+          "title",
+          "status",
+          "priority",
+          "assigneeId",
+          "isAutoGen",
+          "createdAt"
+        ]
+      },
+      "CreateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "matterId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "priority": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assigneeId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "matterId",
+          "title",
+          "priority",
+          "assigneeId"
+        ]
+      },
+      "UpdateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "priority": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assigneeId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CompleteTaskRequest": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AgedDebtorRow": {
+        "type": "object",
+        "properties": {
+          "matterId": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "debtorName": {
+            "type": "string"
+          },
+          "schemeName": {
+            "type": "string"
+          },
+          "agentName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "capitalArrears": {
+            "type": "number"
+          },
+          "interest": {
+            "type": "number"
+          },
+          "legalCosts": {
+            "type": "number"
+          },
+          "totalOutstanding": {
+            "type": "number"
+          },
+          "bucket0to30": {
+            "type": "number"
+          },
+          "bucket31to60": {
+            "type": "number"
+          },
+          "bucket61to90": {
+            "type": "number"
+          },
+          "bucket91to120": {
+            "type": "number"
+          },
+          "bucket120plus": {
+            "type": "number"
+          },
+          "lodDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "matterId",
+          "reference",
+          "debtorName",
+          "schemeName",
+          "unit",
+          "stage",
+          "capitalArrears",
+          "interest",
+          "legalCosts",
+          "totalOutstanding",
+          "bucket0to30",
+          "bucket31to60",
+          "bucket61to90",
+          "bucket91to120",
+          "bucket120plus"
+        ]
+      },
+      "CollectionsByAgentRow": {
+        "type": "object",
+        "properties": {
+          "agentId": {
+            "type": "string"
+          },
+          "agentName": {
+            "type": "string"
+          },
+          "totalMatters": {
+            "type": "integer"
+          },
+          "totalCapital": {
+            "type": "number"
+          },
+          "totalCollected": {
+            "type": "number"
+          },
+          "totalOutstanding": {
+            "type": "number"
+          },
+          "mattersPerStage": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          }
+        },
+        "required": [
+          "agentId",
+          "agentName",
+          "totalMatters",
+          "totalCapital",
+          "totalCollected",
+          "totalOutstanding",
+          "mattersPerStage"
+        ]
+      },
+      "PipelineSummaryRow": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "totalOutstanding": {
+            "type": "number"
+          },
+          "totalCapital": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "stage",
+          "count",
+          "totalOutstanding",
+          "totalCapital"
+        ]
+      },
+      "DashboardSummary": {
+        "type": "object",
+        "properties": {
+          "totalOutstanding": {
+            "type": "number"
+          },
+          "totalCapital": {
+            "type": "number"
+          },
+          "totalInterest": {
+            "type": "number"
+          },
+          "totalLegalCosts": {
+            "type": "number"
+          },
+          "totalCollected": {
+            "type": "number"
+          },
+          "activeMatters": {
+            "type": "integer"
+          },
+          "overdueTasksCount": {
+            "type": "integer"
+          },
+          "mattersByStage": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineSummaryRow"
+            }
+          }
+        },
+        "required": [
+          "totalOutstanding",
+          "totalCapital",
+          "totalInterest",
+          "totalLegalCosts",
+          "totalCollected",
+          "activeMatters",
+          "overdueTasksCount",
+          "mattersByStage"
+        ]
+      },
+      "InterestRate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number"
+          },
+          "effectiveFrom": {
+            "type": "string"
+          },
+          "effectiveTo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "rate",
+          "effectiveFrom",
+          "createdAt"
+        ]
+      },
+      "CreateInterestRateRequest": {
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number"
+          },
+          "effectiveFrom": {
+            "type": "string"
+          },
+          "effectiveTo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "rate",
+          "effectiveFrom"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT from POST /auth/login \u2014 use format: Bearer <token>"
+      }
+    }
+  }
+}
