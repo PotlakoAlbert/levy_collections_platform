@@ -2,7 +2,10 @@
 
 # compiled output
 dist
+.*
+.
 tmp
+.gitignore
 out-tsc
 *.tsbuildinfo
 .expo
@@ -44,9 +47,15 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# Replit
+# Replit and Replit-specific artifacts
+.replit
+.replit-artifact/
+replit.nix
 .cache/
 .local/
+.upm/
+.config/
+.codesandbox/
 
 # Ignore environment files containing secrets
 .env
