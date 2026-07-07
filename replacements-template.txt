@@ -1,7 +1,0 @@
-# git-filter-repo replacements template
-# DO NOT COMMIT this file containing real secrets. Use locally when running git-filter-repo.
-# Format: original_secret==>REPLACEMENT_TEXT
-# Example (do NOT include real secrets in the repo):
-# sk-3804f72c44ed41caa0bc4f3fdce6355f==>REDACTED_DEEPSEEK_KEY
-
-# Add one replacement per line for any secret values you want replaced across history.
